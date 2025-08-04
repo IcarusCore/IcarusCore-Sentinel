@@ -1,0 +1,1073 @@
+{% extends "base.html" %}
+
+{% block title %}Threat Actors - Advanced Persistent Threats{% endblock %}
+
+{% block extra_css %}
+<style>
+    .actor-card {
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .actor-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        border-left-color: var(--danger-color);
+    }
+    
+    .actor-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(220, 53, 69, 0.05) 0%, rgba(108, 117, 125, 0.05) 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .actor-card:hover::before {
+        opacity: 1;
+    }
+    
+    .actor-card .card-body {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .country-flag {
+        width: 24px;
+        height: 18px;
+        border-radius: 2px;
+        display: inline-block;
+        margin-right: 0.5rem;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        text-align: center;
+        font-size: 0.7rem;
+        line-height: 16px;
+    }
+    
+    .sophistication-indicator {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        border: 2px solid white;
+        box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
+    }
+    
+    .sophistication-high {
+        background: #dc3545;
+    }
+    
+    .sophistication-medium {
+        background: #ffc107;
+    }
+    
+    .sophistication-low {
+        background: #28a745;
+    }
+    
+    .sophistication-unknown {
+        background: #6c757d;
+    }
+    
+    .actor-aliases {
+        font-style: italic;
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    .target-sectors {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+        margin-bottom: 1rem;
+    }
+    
+    .activity-timeline {
+        background: linear-gradient(to right, #28a745, #ffc107, #dc3545);
+        height: 4px;
+        border-radius: 2px;
+        margin: 0.5rem 0;
+        position: relative;
+    }
+    
+    .activity-marker {
+        position: absolute;
+        top: -4px;
+        width: 12px;
+        height: 12px;
+        background: white;
+        border: 2px solid #dc3545;
+        border-radius: 50%;
+        right: 10%;
+    }
+    
+    .attribution-confidence {
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    
+    .apt-badge {
+        background: linear-gradient(135deg, #dc3545, #721c24);
+        color: white;
+        font-weight: bold;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    }
+    
+    .nation-state-badge {
+        background: linear-gradient(135deg, #6f42c1, #4c2a85);
+        color: white;
+        font-weight: bold;
+    }
+    
+    .filter-summary {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .world-map-container {
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500"><rect width="1000" height="500" fill="%23f8f9fa"/><text x="500" y="250" text-anchor="middle" fill="%236c757d" font-size="20">World Map Placeholder</text></svg>') center/contain no-repeat;
+        height: 200px;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+        position: relative;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1">
+            <i class="fas fa-user-secret text-danger me-3"></i>
+            Threat Actors & APT Groups
+        </h2>
+        <p class="text-muted mb-0">Intelligence on known adversary groups, their tactics, and attribution</p>
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-primary" onclick="exportActorData()">
+            <i class="fas fa-download me-2"></i>Export
+        </button>
+        <button class="btn btn-primary" onclick="refreshData()">
+            <i class="fas fa-sync-alt me-2"></i>Refresh
+        </button>
+    </div>
+</div>
+
+<!-- Actor Statistics -->
+<div class="filter-summary">
+    <div class="row text-center">
+        <div class="col-md-3">
+            <div class="stat-item">
+                <div class="h4 text-danger mb-1">{{ actors|length }}</div>
+                <small class="text-muted">Total Actors</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-item">
+                <div class="h4 text-warning mb-1">
+                    {{ actors|selectattr('name', 'match', '.*APT.*')|list|length }}
+                </div>
+                <small class="text-muted">APT Groups</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-item">
+                <div class="h4 text-info mb-1">
+                    {{ actors|map(attribute='country')|unique|list|length }}
+                </div>
+                <small class="text-muted">Countries</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-item">
+                <div class="h4 text-success mb-1">
+                    {{ actors|selectattr('sophistication', 'equalto', 'High')|list|length }}
+                </div>
+                <small class="text-muted">High Sophistication</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search and Filter Bar -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label for="actorSearch" class="form-label">Search Actors</label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="text" id="actorSearch" class="form-control" 
+                           placeholder="Search by name, alias, or country...">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <label for="countryFilter" class="form-label">Country</label>
+                <select id="countryFilter" class="form-select">
+                    <option value="">All Countries</option>
+                    {% for actor in actors %}
+                        {% if actor.country %}
+                            <option value="{{ actor.country }}">{{ actor.country }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="sophisticationFilter" class="form-label">Sophistication</label>
+                <select id="sophisticationFilter" class="form-select">
+                    <option value="">All Levels</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="actorTypeFilter" class="form-label">Type</label>
+                <select id="actorTypeFilter" class="form-select">
+                    <option value="">All Types</option>
+                    <option value="APT">APT Groups</option>
+                    <option value="Nation-State">Nation-State</option>
+                    <option value="Criminal">Criminal</option>
+                    <option value="Hacktivist">Hacktivist</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-outline-secondary w-100" onclick="clearActorFilters()">
+                    <i class="fas fa-times me-1"></i>Clear
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Geographic Distribution -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-globe me-2 text-primary"></i>
+            Geographic Distribution
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="world-map-container">
+            <div class="position-absolute top-50 start-50 translate-middle text-center">
+                <i class="fas fa-map fa-3x text-muted mb-2"></i>
+                <p class="text-muted">Interactive world map would be integrated here<br>
+                <small>Showing threat actor origins and targets</small></p>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <h6>Top Origin Countries</h6>
+                <div class="list-group list-group-flush">
+                    {% set country_counts = {} %}
+                    {% for actor in actors %}
+                        {% if actor.country %}
+                            {% set _ = country_counts.update({actor.country: country_counts.get(actor.country, 0) + 1}) %}
+                        {% endif %}
+                    {% endfor %}
+                    {% for country, count in country_counts.items()[:5] %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                        <span>
+                            <span class="country-flag">{{ country[:2] }}</span>
+                            {{ country }}
+                        </span>
+                        <span class="badge bg-danger rounded-pill">{{ count }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h6>Most Targeted Sectors</h6>
+                <div class="list-group list-group-flush">
+                    {% set sector_counts = {} %}
+                    {% for actor in actors %}
+                        {% for target in actor.targets %}
+                            {% set _ = sector_counts.update({target: sector_counts.get(target, 0) + 1}) %}
+                        {% endfor %}
+                    {% endfor %}
+                    {% for sector, count in sector_counts.items()[:5] %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                        <span>{{ sector }}</span>
+                        <span class="badge bg-warning rounded-pill">{{ count }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Actors Grid -->
+<div id="actorsContainer" class="row">
+    {% if actors %}
+        {% for actor in actors %}
+        <div class="col-lg-6 col-xl-4 mb-4 actor-item" 
+             data-name="{{ actor.name|lower }}"
+             data-country="{{ actor.country|lower }}"
+             data-sophistication="{{ actor.sophistication }}"
+             data-aliases="{{ actor.aliases|join(',') if actor.aliases else '' }}"
+             data-type="{{ 'APT' if 'APT' in actor.name else 'Other' }}">
+            <div class="card actor-card h-100">
+                <!-- Sophistication Indicator -->
+                <div class="sophistication-indicator sophistication-{{ actor.sophistication|lower }}"
+                     title="Sophistication: {{ actor.sophistication }}"></div>
+                
+                <div class="card-body">
+                    <!-- Header -->
+                    <div class="mb-3">
+                        <div class="d-flex align-items-start justify-content-between">
+                            <div class="flex-grow-1">
+                                <h5 class="card-title mb-1">{{ actor.name }}</h5>
+                                {% if actor.aliases %}
+                                <div class="actor-aliases mb-2">
+                                    Also known as: {{ actor.aliases|join(', ') }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% if 'APT' in actor.name %}
+                            <span class="badge apt-badge">APT</span>
+                            {% elif actor.country %}
+                            <span class="badge nation-state-badge">Nation-State</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Country and Attribution -->
+                    <div class="mb-3">
+                        {% if actor.country %}
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-map-marker-alt text-muted me-2"></i>
+                            <span class="country-flag">{{ actor.country[:2] }}</span>
+                            <span>{{ actor.country }}</span>
+                        </div>
+                        {% endif %}
+                        
+                        {% if actor.attribution_confidence %}
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-chart-bar text-muted me-2"></i>
+                            <span class="attribution-confidence">
+                                Attribution Confidence: 
+                                <span class="text-{{ 'success' if actor.attribution_confidence == 'High' else 'warning' if actor.attribution_confidence == 'Medium' else 'danger' }}">
+                                    {{ actor.attribution_confidence }}
+                                </span>
+                            </span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Description -->
+                    <p class="card-text text-muted mb-3">
+                        {{ actor.description|truncate_text(120) }}
+                    </p>
+                    
+                    <!-- Activity Timeline -->
+                    {% if actor.active_since or actor.last_activity %}
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-1">
+                            <i class="fas fa-clock me-1"></i>Activity Timeline
+                        </small>
+                        <div class="activity-timeline">
+                            <div class="activity-marker" title="Last seen activity"></div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <small class="text-muted">{{ actor.active_since or 'Unknown' }}</small>
+                            <small class="text-muted">{{ actor.last_activity or 'Present' }}</small>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Target Sectors -->
+                    {% if actor.targets %}
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-2">
+                            <i class="fas fa-crosshairs me-1"></i>Primary Targets:
+                        </small>
+                        <div class="target-sectors">
+                            {% for target in actor.targets[:4] %}
+                            <span class="badge bg-warning text-dark">{{ target }}</span>
+                            {% endfor %}
+                            {% if actor.targets|length > 4 %}
+                            <span class="badge bg-light text-dark">+{{ actor.targets|length - 4 }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Techniques -->
+                    {% if actor.techniques %}
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-2">
+                            <i class="fas fa-cogs me-1"></i>Common Techniques:
+                        </small>
+                        <div>
+                            {% for technique in actor.techniques[:3] %}
+                            <span class="badge bg-danger me-1 mb-1">{{ technique }}</span>
+                            {% endfor %}
+                            {% if actor.techniques|length > 3 %}
+                            <span class="badge bg-secondary">+{{ actor.techniques|length - 3 }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Tools -->
+                    {% if actor.tools %}
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-2">
+                            <i class="fas fa-tools me-1"></i>Known Tools:
+                        </small>
+                        <div>
+                            {% for tool in actor.tools[:3] %}
+                            <span class="badge bg-info me-1 mb-1">{{ tool }}</span>
+                            {% endfor %}
+                            {% if actor.tools|length > 3 %}
+                            <span class="badge bg-secondary">+{{ actor.tools|length - 3 }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Footer -->
+                    <div class="mt-auto">
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-primary flex-fill" 
+                                    onclick="showActorDetails('{{ actor.id }}')"
+                                    title="View Details">
+                                <i class="fas fa-info-circle me-1"></i>Details
+                            </button>
+                            {% if actor.campaigns %}
+                            <button class="btn btn-sm btn-outline-warning" 
+                                    onclick="showActorCampaigns('{{ actor.id }}')"
+                                    title="View Campaigns">
+                                <i class="fas fa-calendar-alt"></i>
+                            </button>
+                            {% endif %}
+                            {% if actor.references %}
+                            <button class="btn btn-sm btn-outline-secondary" 
+                                    onclick="showActorReferences('{{ actor.id }}')"
+                                    title="View References">
+                                <i class="fas fa-external-link-alt"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <!-- Empty State -->
+        <div class="col-12">
+            <div class="text-center py-5">
+                <div class="empty-state">
+                    <i class="fas fa-user-secret fa-4x text-muted mb-4 opacity-50"></i>
+                    <h4>No Threat Actors Found</h4>
+                    <p class="text-muted mb-4">No threat actor data has been loaded yet.</p>
+                    <button class="btn btn-primary" onclick="refreshData()">
+                        <i class="fas fa-sync-alt me-2"></i>Load Actor Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- No Results Message (Hidden by default) -->
+<div id="noActorResults" class="text-center py-5" style="display: none;">
+    <div class="empty-state">
+        <i class="fas fa-search fa-4x text-muted mb-4 opacity-50"></i>
+        <h4>No Actors Match Your Search</h4>
+        <p class="text-muted mb-4">Try adjusting your search criteria or filters.</p>
+        <button class="btn btn-outline-primary" onclick="clearActorFilters()">
+            <i class="fas fa-times me-2"></i>Clear All Filters
+        </button>
+    </div>
+</div>
+
+<!-- Actor Details Modal -->
+<div class="modal fade" id="actorDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Threat Actor Profile</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="actorDetailsContent">
+                <!-- Content loaded dynamically -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="exportActorProfile()">
+                    <i class="fas fa-download me-1"></i>Export Profile
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Actor Campaigns Modal -->
+<div class="modal fade" id="actorCampaignsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Campaign History</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="actorCampaignsContent">
+                <!-- Content loaded dynamically -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Actor filtering functionality
+let actorFilters = {
+    search: '',
+    country: '',
+    sophistication: '',
+    type: ''
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeActorFilters();
+    initializeCountryOptions();
+});
+
+function initializeActorFilters() {
+    // Search input
+    const searchInput = document.getElementById('actorSearch');
+    let searchTimeout;
+    
+    searchInput?.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            actorFilters.search = this.value.toLowerCase().trim();
+            applyActorFilters();
+        }, 300);
+    });
+    
+    // Country filter
+    const countryFilter = document.getElementById('countryFilter');
+    countryFilter?.addEventListener('change', function() {
+        actorFilters.country = this.value;
+        applyActorFilters();
+    });
+    
+    // Sophistication filter
+    const sophisticationFilter = document.getElementById('sophisticationFilter');
+    sophisticationFilter?.addEventListener('change', function() {
+        actorFilters.sophistication = this.value;
+        applyActorFilters();
+    });
+    
+    // Type filter
+    const typeFilter = document.getElementById('actorTypeFilter');
+    typeFilter?.addEventListener('change', function() {
+        actorFilters.type = this.value;
+        applyActorFilters();
+    });
+}
+
+function initializeCountryOptions() {
+    const countryFilter = document.getElementById('countryFilter');
+    if (!countryFilter) return;
+    
+    // Get unique countries from actor cards
+    const countries = new Set();
+    document.querySelectorAll('.actor-item').forEach(item => {
+        const country = item.dataset.country;
+        if (country && country !== 'unknown') {
+            countries.add(country.charAt(0).toUpperCase() + country.slice(1));
+        }
+    });
+    
+    // Clear existing options except first
+    while (countryFilter.children.length > 1) {
+        countryFilter.removeChild(countryFilter.lastChild);
+    }
+    
+    // Add unique countries
+    Array.from(countries).sort().forEach(country => {
+        const option = document.createElement('option');
+        option.value = country;
+        option.textContent = country;
+        countryFilter.appendChild(option);
+    });
+}
+
+function applyActorFilters() {
+    const actorItems = document.querySelectorAll('.actor-item');
+    const noResultsMessage = document.getElementById('noActorResults');
+    const actorsContainer = document.getElementById('actorsContainer');
+    let visibleCount = 0;
+    
+    actorItems.forEach(item => {
+        let shouldShow = true;
+        
+        // Search filter
+        if (actorFilters.search) {
+            const searchText = item.dataset.name + ' ' + item.dataset.aliases + ' ' + item.dataset.country;
+            if (!searchText.includes(actorFilters.search)) {
+                shouldShow = false;
+            }
+        }
+        
+        // Country filter
+        if (actorFilters.country && item.dataset.country !== actorFilters.country.toLowerCase()) {
+            shouldShow = false;
+        }
+        
+        // Sophistication filter
+        if (actorFilters.sophistication && item.dataset.sophistication !== actorFilters.sophistication) {
+            shouldShow = false;
+        }
+        
+        // Type filter
+        if (actorFilters.type) {
+            const itemType = item.dataset.type;
+            if (actorFilters.type === 'APT' && itemType !== 'APT') {
+                shouldShow = false;
+            } else if (actorFilters.type !== 'APT' && actorFilters.type !== itemType) {
+                shouldShow = false;
+            }
+        }
+        
+        // Show/hide item
+        if (shouldShow) {
+            item.style.display = 'block';
+            item.classList.add('fade-in');
+            visibleCount++;
+        } else {
+            item.style.display = 'none';
+            item.classList.remove('fade-in');
+        }
+    });
+    
+    // Show/hide no results message
+    if (visibleCount === 0) {
+        noResultsMessage.style.display = 'block';
+        actorsContainer.style.display = 'none';
+    } else {
+        noResultsMessage.style.display = 'none';
+        actorsContainer.style.display = 'flex';
+    }
+}
+
+function clearActorFilters() {
+    actorFilters = {
+        search: '',
+        country: '',
+        sophistication: '',
+        type: ''
+    };
+    
+    // Reset form controls
+    document.getElementById('actorSearch').value = '';
+    document.getElementById('countryFilter').value = '';
+    document.getElementById('sophisticationFilter').value = '';
+    document.getElementById('actorTypeFilter').value = '';
+    
+    // Apply filters
+    applyActorFilters();
+    
+    // Show success message
+    if (window.ThreatDashboard && window.ThreatDashboard.showAlert) {
+        window.ThreatDashboard.showAlert('Filters cleared', 'info', 2000);
+    }
+}
+
+function showActorDetails(actorId) {
+    const modal = new bootstrap.Modal(document.getElementById('actorDetailsModal'));
+    const content = document.getElementById('actorDetailsContent');
+    
+    // Find actor data from the DOM
+    const actorCard = document.querySelector(`.actor-item .card-title:contains('${actorId}')`);
+    if (!actorCard) {
+        // Fallback: use first actor for demo
+        const firstActor = document.querySelector('.actor-item');
+        if (firstActor) {
+            generateActorDetails(firstActor, content);
+        } else {
+            content.innerHTML = '<p class="text-muted">Actor details not found.</p>';
+        }
+    } else {
+        const actorItem = actorCard.closest('.actor-item');
+        generateActorDetails(actorItem, content);
+    }
+    
+    modal.show();
+}
+
+function generateActorDetails(actorItem, content) {
+    const name = actorItem.querySelector('.card-title')?.textContent || 'Unknown Actor';
+    const description = actorItem.querySelector('.card-text')?.textContent || 'No description available.';
+    const country = actorItem.dataset.country || 'Unknown';
+    const sophistication = actorItem.dataset.sophistication || 'Unknown';
+    const aliases = actorItem.dataset.aliases ? actorItem.dataset.aliases.split(',') : [];
+    
+    // Get techniques, tools, and targets from badges
+    const targets = Array.from(actorItem.querySelectorAll('.badge.bg-warning')).map(el => el.textContent);
+    const techniques = Array.from(actorItem.querySelectorAll('.badge.bg-danger')).map(el => el.textContent);
+    const tools = Array.from(actorItem.querySelectorAll('.badge.bg-info')).map(el => el.textContent);
+    
+    content.innerHTML = `
+        <div class="actor-profile">
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <h3>${name}</h3>
+                    ${aliases.length > 0 ? `<p class="text-muted">Also known as: ${aliases.join(', ')}</p>` : ''}
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="d-flex flex-column gap-2">
+                        <span class="badge bg-danger fs-6">Threat Actor</span>
+                        <span class="badge bg-info">Sophistication: ${sophistication}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h5>Overview</h5>
+                    <p>${description}</p>
+                    
+                    <h6 class="mt-3">Attribution</h6>
+                    <ul class="list-unstyled">
+                        <li><strong>Country:</strong> ${country}</li>
+                        <li><strong>Sophistication:</strong> ${sophistication}</li>
+                        <li><strong>Type:</strong> ${name.includes('APT') ? 'Advanced Persistent Threat' : 'Threat Actor'}</li>
+                    </ul>
+                </div>
+                
+                <div class="col-md-6">
+                    <h5>Operational Profile</h5>
+                    
+                    ${targets.length > 0 ? `
+                    <h6>Primary Targets</h6>
+                    <div class="mb-3">
+                        ${targets.map(target => `<span class="badge bg-warning text-dark me-1">${target}</span>`).join('')}
+                    </div>
+                    ` : ''}
+                    
+                    ${techniques.length > 0 ? `
+                    <h6>Common Techniques</h6>
+                    <div class="mb-3">
+                        ${techniques.map(technique => `<span class="badge bg-danger me-1">${technique}</span>`).join('')}
+                    </div>
+                    ` : ''}
+                    
+                    ${tools.length > 0 ? `
+                    <h6>Known Tools</h6>
+                    <div class="mb-3">
+                        ${tools.map(tool => `<span class="badge bg-info me-1">${tool}</span>`).join('')}
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-12">
+                    <h5>Threat Assessment</h5>
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>High Risk:</strong> This threat actor demonstrates advanced capabilities and poses significant risk to targeted organizations.
+                    </div>
+                    
+                    <h6>Recommended Defenses</h6>
+                    <ul>
+                        <li>Implement multi-factor authentication across all systems</li>
+                        <li>Deploy advanced endpoint detection and response (EDR) solutions</li>
+                        <li>Conduct regular security awareness training focusing on spear phishing</li>
+                        <li>Implement network segmentation to limit lateral movement</li>
+                        <li>Monitor for indicators of compromise (IOCs) associated with this actor</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function showActorCampaigns(actorId) {
+    const modal = new bootstrap.Modal(document.getElementById('actorCampaignsModal'));
+    const content = document.getElementById('actorCampaignsContent');
+    
+    // Mock campaign data - in real implementation, this would come from the backend
+    content.innerHTML = `
+        <div class="campaigns-timeline">
+            <div class="timeline-item">
+                <div class="timeline-marker bg-danger"></div>
+                <div class="timeline-content">
+                    <h6>Operation CloudHopper</h6>
+                    <p class="text-muted">2017 - 2019</p>
+                    <p>Large-scale espionage campaign targeting managed service providers and their clients.</p>
+                    <div class="mt-2">
+                        <span class="badge bg-secondary me-1">Spear Phishing</span>
+                        <span class="badge bg-secondary me-1">Supply Chain</span>
+                        <span class="badge bg-secondary">Data Exfiltration</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-marker bg-warning"></div>
+                <div class="timeline-content">
+                    <h6>Financial Sector Campaign</h6>
+                    <p class="text-muted">2019 - 2020</p>
+                    <p>Targeted attacks against financial institutions in Southeast Asia.</p>
+                    <div class="mt-2">
+                        <span class="badge bg-secondary me-1">Watering Hole</span>
+                        <span class="badge bg-secondary me-1">Zero-Day</span>
+                        <span class="badge bg-secondary">Credential Theft</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-marker bg-info"></div>
+                <div class="timeline-content">
+                    <h6>Recent Activity</h6>
+                    <p class="text-muted">2023 - Present</p>
+                    <p>Ongoing reconnaissance and initial access attempts against government targets.</p>
+                    <div class="mt-2">
+                        <span class="badge bg-secondary me-1">Reconnaissance</span>
+                        <span class="badge bg-secondary me-1">Social Engineering</span>
+                        <span class="badge bg-secondary">Living off the Land</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <style>
+        .campaigns-timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+        
+        .campaigns-timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #dee2e6;
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+        
+        .timeline-marker {
+            position: absolute;
+            left: -1.75rem;
+            top: 0.5rem;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 0 0 2px #dee2e6;
+        }
+        
+        .timeline-content {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+        </style>
+    `;
+    
+    modal.show();
+}
+
+function showActorReferences(actorId) {
+    const modal = new bootstrap.Modal(document.getElementById('actorDetailsModal'));
+    const content = document.getElementById('actorDetailsContent');
+    
+    content.innerHTML = `
+        <div class="references-section">
+            <h5>External References</h5>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h6><i class="fas fa-newspaper me-2"></i>Threat Reports</h6>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item border-0 px-0">
+                            <a href="#" target="_blank" class="text-decoration-none">
+                                <i class="fas fa-external-link-alt me-2"></i>
+                                Comprehensive Analysis Report 2023
+                            </a>
+                            <br><small class="text-muted">Security Vendor Report</small>
+                        </li>
+                        <li class="list-group-item border-0 px-0">
+                            <a href="#" target="_blank" class="text-decoration-none">
+                                <i class="fas fa-external-link-alt me-2"></i>
+                                Attribution Analysis
+                            </a>
+                            <br><small class="text-muted">Government Advisory</small>
+                        </li>
+                        <li class="list-group-item border-0 px-0">
+                            <a href="#" target="_blank" class="text-decoration-none">
+                                <i class="fas fa-external-link-alt me-2"></i>
+                                Technical Deep Dive
+                            </a>
+                            <br><small class="text-muted">Research Publication</small>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="col-md-6">
+                    <h6><i class="fas fa-database me-2"></i>Threat Intelligence</h6>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item border-0 px-0">
+                            <a href="#" target="_blank" class="text-decoration-none">
+                                <i class="fas fa-external-link-alt me-2"></i>
+                                MITRE ATT&CK Group Profile
+                            </a>
+                            <br><small class="text-muted">MITRE Corporation</small>
+                        </li>
+                        <li class="list-group-item border-0 px-0">
+                            <a href="#" target="_blank" class="text-decoration-none">
+                                <i class="fas fa-external-link-alt me-2"></i>
+                                Indicators of Compromise
+                            </a>
+                            <br><small class="text-muted">IOC Repository</small>
+                        </li>
+                        <li class="list-group-item border-0 px-0">
+                            <a href="#" target="_blank" class="text-decoration-none">
+                                <i class="fas fa-external-link-alt me-2"></i>
+                                YARA Rules Collection
+                            </a>
+                            <br><small class="text-muted">Signature Database</small>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    modal.show();
+}
+
+function exportActorData() {
+    const visibleActors = document.querySelectorAll('.actor-item[style*="block"], .actor-item:not([style*="none"])');
+    
+    if (visibleActors.length === 0) {
+        if (window.ThreatDashboard && window.ThreatDashboard.showAlert) {
+            window.ThreatDashboard.showAlert('No actors to export', 'warning');
+        }
+        return;
+    }
+    
+    const exportData = {
+        exportTime: new Date().toISOString(),
+        totalActors: visibleActors.length,
+        filters: actorFilters,
+        actors: Array.from(visibleActors).map(item => ({
+            name: item.querySelector('.card-title')?.textContent || '',
+            description: item.querySelector('.card-text')?.textContent || '',
+            country: item.dataset.country || '',
+            sophistication: item.dataset.sophistication || '',
+            aliases: item.dataset.aliases ? item.dataset.aliases.split(',') : [],
+            type: item.dataset.type || ''
+        }))
+    };
+    
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `threat-actors-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    if (window.ThreatDashboard && window.ThreatDashboard.showAlert) {
+        window.ThreatDashboard.showAlert(`Exported ${visibleActors.length} threat actors`, 'success');
+    }
+}
+
+function exportActorProfile() {
+    const modal = document.getElementById('actorDetailsModal');
+    const content = modal.querySelector('.actor-profile');
+    
+    if (!content) return;
+    
+    const actorName = content.querySelector('h3')?.textContent || 'actor-profile';
+    const filename = `${actorName.toLowerCase().replace(/\s+/g, '-')}-profile-${new Date().toISOString().split('T')[0]}.html`;
+    
+    const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>${actorName} - Threat Actor Profile</title>
+            <meta charset="UTF-8">
+            <style>
+                body { font-family: Arial, sans-serif; margin: 2rem; }
+                .badge { background: #007bff; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.875rem; }
+                .alert { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 1rem; border-radius: 0.25rem; }
+                h3, h5, h6 { color: #333; }
+                .text-muted { color: #6c757d; }
+            </style>
+        </head>
+        <body>
+            ${content.innerHTML}
+            <hr>
+            <small class="text-muted">Generated on ${new Date().toLocaleString()} by Threat Intel Dashboard</small>
+        </body>
+        </html>
+    `;
+    
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    if (window.ThreatDashboard && window.ThreatDashboard.showAlert) {
+        window.ThreatDashboard.showAlert('Actor profile exported', 'success');
+    }
+}
+
+// Make functions globally available
+window.clearActorFilters = clearActorFilters;
+window.showActorDetails = showActorDetails;
+window.showActorCampaigns = showActorCampaigns;
+window.showActorReferences = showActorReferences;
+window.exportActorData = exportActorData;
+window.exportActorProfile = exportActorProfile;
+
+// jQuery-like contains selector for older browsers
+if (!Element.prototype.matches) {
+    Element.prototype.matches = Element.prototype.msMatchesSelector || 
+                                Element.prototype.webkitMatchesSelector;
+}
+</script>
+{% endblock %}

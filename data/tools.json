@@ -1,0 +1,290 @@
+[
+  {
+    "id": "powershell",
+    "name": "PowerShell",
+    "description": "Command-line shell and scripting language built on .NET Framework. Often abused by attackers for fileless malware, living off the land attacks, and system administration tasks.",
+    "category": "Dual-use Tool",
+    "platforms": ["Windows", "Linux", "macOS"],
+    "used_by": ["APT28", "APT29", "FIN7", "Lazarus Group", "APT32"],
+    "techniques": ["T1059.001", "T1105", "T1140", "T1027", "T1055"],
+    "detection": "Monitor PowerShell execution and command-line arguments. Enable PowerShell logging (script block logging, module logging, transcription). Look for suspicious script execution, encoded commands, downloads, and execution bypasses.",
+    "mitigation": "Enable PowerShell logging and monitoring. Implement constrained language mode. Use application control policies. Restrict PowerShell execution to authorized users. Configure execution policies appropriately.",
+    "is_legitimate": true,
+    "availability": "Free",
+    "references": [
+      "https://attack.mitre.org/techniques/T1059/001/",
+      "https://docs.microsoft.com/en-us/powershell/"
+    ],
+    "aliases": ["pwsh", "powershell.exe"]
+  },
+  {
+    "id": "mimikatz",
+    "name": "Mimikatz",
+    "description": "Open-source application that allows users to view and save authentication credentials like Kerberos tickets. Widely used by penetration testers and malicious actors for credential extraction.",
+    "category": "Credential Access",
+    "platforms": ["Windows"],
+    "used_by": ["APT1", "APT28", "APT29", "FIN7", "Lazarus Group", "APT40", "DarkHydrus"],
+    "techniques": ["T1003.001", "T1003.002", "T1558.003", "T1134", "T1078"],
+    "detection": "Monitor for LSASS access, credential dumping activities, and Mimikatz-specific indicators. Look for processes accessing LSASS memory, suspicious privilege escalations, and Kerberos ticket manipulation.",
+    "mitigation": "Implement Credential Guard, use Protected Process Light for LSASS, enable LSA protection, implement least privilege principles, and monitor credential access attempts.",
+    "is_legitimate": true,
+    "availability": "Free",
+    "references": [
+      "https://attack.mitre.org/software/S0002/",
+      "https://github.com/gentilkiwi/mimikatz"
+    ],
+    "aliases": ["mimi", "kiwi"]
+  },
+  {
+    "id": "cobalt-strike",
+    "name": "Cobalt Strike",
+    "description": "Commercial penetration testing tool that provides a framework for adversary simulations and red team operations. Frequently used by threat actors for post-exploitation activities.",
+    "category": "Command and Control",
+    "platforms": ["Windows", "Linux", "macOS"],
+    "used_by": ["APT29", "FIN7", "APT40", "TA505", "Multiple Ransomware Groups"],
+    "techniques": ["T1071.001", "T1055", "T1105", "T1027", "T1090"],
+    "detection": "Monitor for beacon communications, process injection techniques, and Cobalt Strike-specific artifacts. Look for C2 communications, suspicious process behavior, and known Cobalt Strike indicators.",
+    "mitigation": "Block known C2 domains, monitor network traffic for beacon patterns, implement endpoint detection for process injection, and use threat intelligence feeds to identify Cobalt Strike infrastructure.",
+    "is_legitimate": true,
+    "availability": "Commercial",
+    "references": [
+      "https://attack.mitre.org/software/S0154/",
+      "https://www.cobaltstrike.com/"
+    ],
+    "aliases": ["CS", "Beacon"]
+  },
+  {
+    "id": "psexec",
+    "name": "PsExec",
+    "description": "Light-weight telnet-replacement that lets you execute processes on other systems. Part of Microsoft Sysinternals suite, commonly used for legitimate administration and lateral movement by attackers.",
+    "category": "Dual-use Tool",
+    "platforms": ["Windows"],
+    "used_by": ["APT1", "APT28", "FIN7", "Multiple threat actors"],
+    "techniques": ["T1021.002", "T1569.002", "T1078"],
+    "detection": "Monitor for PsExec execution, especially when used with suspicious accounts or targeting multiple systems. Look for service creation events and network connections to admin shares.",
+    "mitigation": "Restrict administrative privileges, monitor service creation, implement network segmentation, and audit remote execution tools usage.",
+    "is_legitimate": true,
+    "availability": "Free",
+    "references": [
+      "https://attack.mitre.org/software/S0029/",
+      "https://docs.microsoft.com/en-us/sysinternals/downloads/psexec"
+    ],
+    "aliases": ["psexec.exe"]
+  },
+  {
+    "id": "empire",
+    "name": "Empire",
+    "description": "Post-exploitation framework that includes a pure-PowerShell Windows agent and a pure Python Linux/OS X agent. Provides cryptographically-secure communications and a flexible architecture.",
+    "category": "Post-Exploitation",
+    "platforms": ["Windows", "Linux", "macOS"],
+    "used_by": ["Various threat actors", "Red teams", "Penetration testers"],
+    "techniques": ["T1059.001", "T1071.001", "T1055", "T1027", "T1105"],
+    "detection": "Monitor for Empire-specific PowerShell modules, C2 communications, and staging activities. Look for base64 encoded commands and Empire's characteristic communication patterns.",
+    "mitigation": "Monitor PowerShell usage, implement network monitoring for C2 communications, use application control, and deploy behavioral analysis tools.",
+    "is_legitimate": true,
+    "availability": "Free",
+    "references": [
+      "https://github.com/EmpireProject/Empire",
+      "https://attack.mitre.org/software/S0363/"
+    ],
+    "aliases": ["PowerShell Empire"]
+  },
+  {
+    "id": "meterpreter",
+    "name": "Meterpreter",
+    "description": "Advanced multi-function payload that is part of the Metasploit Framework. Provides an interactive shell from which an attacker can explore the target machine and execute code.",
+    "category": "Post-Exploitation",
+    "platforms": ["Windows", "Linux", "macOS", "Android"],
+    "used_by": ["APT28", "Various threat actors", "Penetration testers"],
+    "techniques": ["T1055", "T1071.001", "T1105", "T1027", "T1041"],
+    "detection": "Monitor for Meterpreter-specific artifacts, process injection techniques, and network communications. Look for reflective DLL loading and in-memory execution.",
+    "mitigation": "Use endpoint detection and response tools, monitor process injection, implement network monitoring, and use application control policies.",
+    "is_legitimate": true,
+    "availability": "Free",
+    "references": [
+      "https://attack.mitre.org/software/S0001/",
+      "https://www.metasploit.com/"
+    ],
+    "aliases": ["MSF", "Metasploit"]
+  },
+  {
+    "id": "wmic",
+    "name": "Windows Management Instrumentation Command-line",
+    "description": "WMI command-line utility that allows users to perform WMI operations from a command prompt. Commonly abused for reconnaissance, lateral movement, and persistence.",
+    "category": "Dual-use Tool",
+    "platforms": ["Windows"],
+    "used_by": ["APT29", "FIN7", "APT32", "Multiple threat actors"],
+    "techniques": ["T1047", "T1012", "T1018", "T1082", "T1033"],
+    "detection": "Monitor WMIC command execution, especially for reconnaissance commands, remote execution, and suspicious WMI queries. Look for unusual WMI activity patterns.",
+    "mitigation": "Monitor WMI usage, implement logging for WMI commands, restrict WMI access where possible, and use behavioral analysis to detect malicious WMI usage.",
+    "is_legitimate": true,
+    "availability": "Built-in",
+    "references": [
+      "https://attack.mitre.org/techniques/T1047/",
+      "https://docs.microsoft.com/en-us/windows/win32/wmisdk/wmic"
+    ],
+    "aliases": ["wmic.exe", "WMI"]
+  },
+  {
+    "id": "certutil",
+    "name": "Certutil",
+    "description": "Command-line program for certificate services. Often abused by attackers to download files, decode base64 data, and perform other malicious activities while appearing as legitimate Windows utility.",
+    "category": "Dual-use Tool",
+    "platforms": ["Windows"],
+    "used_by": ["APT32", "FIN7", "Various threat actors"],
+    "techniques": ["T1105", "T1140", "T1027", "T1218.003"],
+    "detection": "Monitor certutil usage for file downloads, base64 operations, and unusual parameters. Look for certutil being used outside of certificate management contexts.",
+    "mitigation": "Monitor certutil usage, implement application control policies, restrict certutil parameters where possible, and use network monitoring to detect suspicious downloads.",
+    "is_legitimate": true,
+    "availability": "Built-in",
+    "references": [
+      "https://attack.mitre.org/techniques/T1105/",
+      "https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/certutil"
+    ],
+    "aliases": ["certutil.exe"]
+  },
+  {
+    "id": "nmap",
+    "name": "Nmap",
+    "description": "Network discovery and security auditing tool. Used by security professionals for network mapping and reconnaissance, but also commonly used by attackers for network discovery.",
+    "category": "Network",
+    "platforms": ["Windows", "Linux", "macOS"],
+    "used_by": ["APT1", "APT28", "Various threat actors", "Security professionals"],
+    "techniques": ["T1046", "T1018", "T1135", "T1040"],
+    "detection": "Monitor for network scanning activities, unusual port scan patterns, and Nmap-specific network traffic. Look for reconnaissance activities and systematic network probing.",
+    "mitigation": "Implement network monitoring, use intrusion detection systems, monitor for scanning activities, and implement network segmentation to limit reconnaissance impact.",
+    "is_legitimate": true,
+    "availability": "Free",
+    "references": [
+      "https://nmap.org/",
+      "https://attack.mitre.org/techniques/T1046/"
+    ],
+    "aliases": ["Network Mapper"]
+  },
+  {
+    "id": "netcat",
+    "name": "Netcat",
+    "description": "Networking utility for reading from and writing to network connections using TCP or UDP. Often called the 'Swiss Army knife' of networking tools, frequently used by attackers for backdoors and data transfer.",
+    "category": "Network",
+    "platforms": ["Windows", "Linux", "macOS"],
+    "used_by": ["Various threat actors", "System administrators"],
+    "techniques": ["T1095", "T1071.001", "T1041", "T1105"],
+    "detection": "Monitor for netcat execution, especially with suspicious parameters like listening modes or connecting to unusual destinations. Look for persistent network connections.",
+    "mitigation": "Monitor network connections, implement application control, use network segmentation, and monitor for suspicious netcat usage patterns.",
+    "is_legitimate": true,
+    "availability": "Free",
+    "references": [
+      "https://nc110.sourceforge.io/",
+      "https://attack.mitre.org/techniques/T1095/"
+    ],
+    "aliases": ["nc", "ncat"]
+  },
+  {
+    "id": "wget",
+    "name": "Wget",
+    "description": "Free software package for retrieving files using HTTP, HTTPS, FTP and FTPS protocols. Commonly used by attackers to download additional payloads and tools from remote servers.",
+    "category": "Dual-use Tool",
+    "platforms": ["Linux", "macOS", "Windows"],
+    "used_by": ["Various threat actors", "System administrators"],
+    "techniques": ["T1105", "T1071.001"],
+    "detection": "Monitor wget execution for downloads from suspicious sources, unusual file types, or external domains. Look for automated download activities and bulk file retrievals.",
+    "mitigation": "Monitor file downloads, implement network filtering, use application control, and monitor for suspicious wget usage patterns.",
+    "is_legitimate": true,
+    "availability": "Free",
+    "references": [
+      "https://www.gnu.org/software/wget/",
+      "https://attack.mitre.org/techniques/T1105/"
+    ],
+    "aliases": ["GNU Wget"]
+  },
+  {
+    "id": "curl",
+    "name": "cURL",
+    "description": "Command-line tool and library for transferring data with URLs. Supports many protocols and is commonly used by attackers for downloading payloads, data exfiltration, and C2 communications.",
+    "category": "Dual-use Tool",
+    "platforms": ["Windows", "Linux", "macOS"],
+    "used_by": ["Various threat actors", "Developers", "System administrators"],
+    "techniques": ["T1105", "T1071.001", "T1041"],
+    "detection": "Monitor curl execution for suspicious destinations, unusual parameters, or data transfer patterns. Look for automated communications and bulk data transfers.",
+    "mitigation": "Monitor network traffic, implement URL filtering, use application monitoring, and detect suspicious curl usage patterns.",
+    "is_legitimate": true,
+    "availability": "Free",
+    "references": [
+      "https://curl.se/",
+      "https://attack.mitre.org/techniques/T1105/"
+    ],
+    "aliases": ["curl.exe"]
+  },
+  {
+    "id": "rundll32",
+    "name": "Rundll32",
+    "description": "Windows utility that loads and runs 32-bit dynamic-link libraries (DLLs). Frequently abused by attackers to execute malicious code while appearing as a legitimate Windows process.",
+    "category": "Dual-use Tool",
+    "platforms": ["Windows"],
+    "used_by": ["APT28", "APT29", "FIN7", "Various threat actors"],
+    "techniques": ["T1218.011", "T1055", "T1027"],
+    "detection": "Monitor rundll32 execution with unusual DLLs, suspicious parameters, or execution from unusual locations. Look for process hollowing and DLL injection techniques.",
+    "mitigation": "Monitor rundll32 usage, implement application control, use process monitoring, and analyze DLL loading activities.",
+    "is_legitimate": true,
+    "availability": "Built-in",
+    "references": [
+      "https://attack.mitre.org/techniques/T1218/011/",
+      "https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/rundll32"
+    ],
+    "aliases": ["rundll32.exe"]
+  },
+  {
+    "id": "regsvr32",
+    "name": "Regsvr32",
+    "description": "Microsoft Register Server utility used to register and unregister OLE controls like DLLs and ActiveX controls. Often exploited by attackers to bypass application control and execute malicious scripts.",
+    "category": "Dual-use Tool",
+    "platforms": ["Windows"],
+    "used_by": ["APT32", "FIN7", "Various threat actors"],
+    "techniques": ["T1218.010", "T1105", "T1027"],
+    "detection": "Monitor regsvr32 execution with suspicious parameters, remote file registration, or execution from unusual locations. Look for squiblydoo attacks and remote scriptlet execution.",
+    "mitigation": "Monitor regsvr32 usage, implement application control policies, use network monitoring for remote file access, and restrict regsvr32 capabilities where possible.",
+    "is_legitimate": true,
+    "availability": "Built-in",
+    "references": [
+      "https://attack.mitre.org/techniques/T1218/010/",
+      "https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/regsvr32"
+    ],
+    "aliases": ["regsvr32.exe"]
+  },
+  {
+    "id": "bitsadmin",
+    "name": "BITSAdmin",
+    "description": "Command-line tool for creating download or upload jobs and monitoring their progress. Background Intelligent Transfer Service (BITS) is often abused by attackers for persistence and data transfer.",
+    "category": "Dual-use Tool",
+    "platforms": ["Windows"],
+    "used_by": ["APT40", "Various threat actors"],
+    "techniques": ["T1197", "T1105", "T1036"],
+    "detection": "Monitor BITS job creation, especially for downloads from external sources or suspicious file transfers. Look for persistence mechanisms using BITS jobs.",
+    "mitigation": "Monitor BITS usage, implement network filtering, use application control, and regularly audit BITS jobs for suspicious activities.",
+    "is_legitimate": true,
+    "availability": "Built-in",
+    "references": [
+      "https://attack.mitre.org/techniques/T1197/",
+      "https://docs.microsoft.com/en-us/windows/win32/bits/bitsadmin-tool"
+    ],
+    "aliases": ["bitsadmin.exe", "BITS"]
+  },
+  {
+    "id": "mshta",
+    "name": "Mshta",
+    "description": "Microsoft HTML Application utility that executes HTML Application files (.hta). Commonly abused by attackers to execute malicious scripts while bypassing application controls.",
+    "category": "Dual-use Tool",
+    "platforms": ["Windows"],
+    "used_by": ["APT32", "FIN7", "Various threat actors"],
+    "techniques": ["T1218.005", "T1105", "T1027"],
+    "detection": "Monitor mshta execution, especially with remote files, suspicious URLs, or encoded content. Look for HTML applications executing from unusual locations.",
+    "mitigation": "Monitor mshta usage, implement application control, use network filtering for remote HTA files, and restrict mshta execution where possible.",
+    "is_legitimate": true,
+    "availability": "Built-in",
+    "references": [
+      "https://attack.mitre.org/techniques/T1218/005/",
+      "https://docs.microsoft.com/en-us/previous-versions/ms536496(v=vs.85)"
+    ],
+    "aliases": ["mshta.exe", "HTML Application"]
+  }
+]

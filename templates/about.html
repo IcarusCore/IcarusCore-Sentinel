@@ -1,0 +1,912 @@
+{% extends "base.html" %}
+
+{% block title %}About - Threat Intel Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-about {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 4rem 0;
+        border-radius: 15px;
+        margin-bottom: 3rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .hero-about::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+        animation: backgroundMove 20s linear infinite;
+    }
+    
+    @keyframes backgroundMove {
+        0% { transform: translateX(0) translateY(0); }
+        100% { transform: translateX(-10px) translateY(-10px); }
+    }
+    
+    .hero-about .container {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .feature-card {
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 25px rgba(0,0,0,0.15);
+    }
+    
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 2rem;
+    }
+    
+    .data-source-card {
+        border-left: 4px solid transparent;
+        transition: all 0.3s ease;
+    }
+    
+    .data-source-card:hover {
+        border-left-color: var(--primary-color);
+        transform: translateX(5px);
+    }
+    
+    .tech-stack-item {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+    
+    .tech-stack-item:hover {
+        background: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+        transform: scale(1.05);
+    }
+    
+    .timeline {
+        position: relative;
+        padding-left: 2rem;
+    }
+    
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: var(--primary-color);
+    }
+    
+    .timeline-item {
+        position: relative;
+        margin-bottom: 2rem;
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -1.75rem;
+        top: 1.5rem;
+        width: 12px;
+        height: 12px;
+        background: var(--primary-color);
+        border-radius: 50%;
+        border: 3px solid white;
+        box-shadow: 0 0 0 2px var(--primary-color);
+    }
+    
+    .contact-card {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 15px;
+        padding: 2rem;
+        border: none;
+    }
+    
+    .github-stats {
+        background: #24292e;
+        color: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+    }
+    
+    .stats-item {
+        text-align: center;
+        padding: 1rem;
+    }
+    
+    .stats-number {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #28a745;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-about">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold mb-3">
+            <i class="fas fa-shield-alt me-3"></i>
+            Threat Intelligence Dashboard
+        </h1>
+        <p class="lead mb-4">
+            Open-source cybersecurity threat intelligence aggregation platform
+        </p>
+        <p class="mb-4">
+            Empowering security professionals with real-time threat intelligence from trusted sources
+        </p>
+        <div class="d-flex gap-3 justify-content-center">
+            <a href="https://github.com/your-repo/threat-intel-dashboard" target="_blank" class="btn btn-light btn-lg">
+                <i class="fab fa-github me-2"></i>View on GitHub
+            </a>
+            <a href="#features" class="btn btn-outline-light btn-lg">
+                <i class="fas fa-arrow-down me-2"></i>Learn More
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Mission Statement -->
+<div class="row mb-5">
+    <div class="col-lg-8 mx-auto text-center">
+        <h2 class="mb-4">Our Mission</h2>
+        <p class="lead text-muted">
+            To democratize access to cybersecurity threat intelligence by aggregating, analyzing, and presenting 
+            threat data from multiple authoritative sources in an intuitive, actionable format.
+        </p>
+        <p class="text-muted">
+            In today's rapidly evolving threat landscape, security teams need immediate access to the latest 
+            threat intelligence to protect their organizations. Our platform bridges the gap between raw threat 
+            data and actionable security insights.
+        </p>
+    </div>
+</div>
+
+<!-- Key Features -->
+<section id="features" class="mb-5">
+    <h2 class="text-center mb-5">Key Features</h2>
+    <div class="row g-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="card feature-card h-100">
+                <div class="card-body text-center">
+                    <div class="feature-icon bg-primary text-white">
+                        <i class="fas fa-sync-alt"></i>
+                    </div>
+                    <h5 class="card-title">Real-time Updates</h5>
+                    <p class="card-text">
+                        Automatic data refresh from multiple threat intelligence sources with configurable intervals.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3">
+            <div class="card feature-card h-100">
+                <div class="card-body text-center">
+                    <div class="feature-icon bg-success text-white">
+                        <i class="fas fa-crosshairs"></i>
+                    </div>
+                    <h5 class="card-title">MITRE ATT&CK Integration</h5>
+                    <p class="card-text">
+                        Native integration with the MITRE ATT&CK framework for standardized threat categorization.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3">
+            <div class="card feature-card h-100">
+                <div class="card-body text-center">
+                    <div class="feature-icon bg-warning text-white">
+                        <i class="fas fa-filter"></i>
+                    </div>
+                    <h5 class="card-title">Advanced Filtering</h5>
+                    <p class="card-text">
+                        Powerful search and filtering capabilities with support for multiple criteria and saved searches.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3">
+            <div class="card feature-card h-100">
+                <div class="card-body text-center">
+                    <div class="feature-icon bg-info text-white">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h5 class="card-title">Analytics & Insights</h5>
+                    <p class="card-text">
+                        Visual analytics and trend analysis to identify patterns and emerging threats.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Data Sources -->
+<section class="mb-5">
+    <h2 class="text-center mb-5">Data Sources</h2>
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card data-source-card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="me-3">
+                            <i class="fas fa-crosshairs fa-2x text-purple"></i>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-1">MITRE ATT&CK</h5>
+                            <small class="text-muted">Tactics, Techniques & Procedures</small>
+                        </div>
+                    </div>
+                    <p class="card-text">
+                        The globally-accessible knowledge base of adversary tactics and techniques based on real-world observations.
+                    </p>
+                    <ul class="list-unstyled small">
+                        <li><i class="fas fa-check text-success me-2"></i>Enterprise Matrix</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Technique Descriptions</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Mitigation Strategies</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Detection Methods</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card data-source-card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="me-3">
+                            <i class="fas fa-shield-alt fa-2x text-info"></i>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-1">CISA Alerts</h5>
+                            <small class="text-muted">Government Security Advisories</small>
+                        </div>
+                    </div>
+                    <p class="card-text">
+                        Official cybersecurity alerts and advisories from the Cybersecurity and Infrastructure Security Agency.
+                    </p>
+                    <ul class="list-unstyled small">
+                        <li><i class="fas fa-check text-success me-2"></i>Emergency Directives</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Security Advisories</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Vulnerability Bulletins</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Best Practices</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card data-source-card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="me-3">
+                            <i class="fas fa-satellite fa-2x text-success"></i>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-1">AlienVault OTX</h5>
+                            <small class="text-muted">Open Threat Exchange</small>
+                        </div>
+                    </div>
+                    <p class="card-text">
+                        Community-driven threat intelligence platform with indicators, pulses, and threat actor profiles.
+                    </p>
+                    <ul class="list-unstyled small">
+                        <li><i class="fas fa-check text-success me-2"></i>Threat Pulses</li>
+                        <li><i class="fas fa-check text-success me-2"></i>IOCs Database</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Malware Analysis</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Community Insights</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card data-source-card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="me-3">
+                            <i class="fas fa-rss fa-2x text-secondary"></i>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-1">Security News Feeds</h5>
+                            <small class="text-muted">RSS & Publications</small>
+                        </div>
+                    </div>
+                    <p class="card-text">
+                        Curated security news and research from leading cybersecurity publications and researchers.
+                    </p>
+                    <ul class="list-unstyled small">
+                        <li><i class="fas fa-check text-success me-2"></i>BleepingComputer</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Krebs on Security</li>
+                        <li><i class="fas fa-check text-success me-2"></i>The Hacker News</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Research Papers</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Technology Stack -->
+<section class="mb-5">
+    <h2 class="text-center mb-5">Technology Stack</h2>
+    <div class="row g-3">
+        <div class="col-md-2 col-sm-4 col-6">
+            <div class="tech-stack-item">
+                <i class="fab fa-python fa-2x mb-2"></i>
+                <h6>Python</h6>
+                <small>Backend Logic</small>
+            </div>
+        </div>
+        
+        <div class="col-md-2 col-sm-4 col-6">
+            <div class="tech-stack-item">
+                <i class="fas fa-server fa-2x mb-2"></i>
+                <h6>Flask</h6>
+                <small>Web Framework</small>
+            </div>
+        </div>
+        
+        <div class="col-md-2 col-sm-4 col-6">
+            <div class="tech-stack-item">
+                <i class="fab fa-bootstrap fa-2x mb-2"></i>
+                <h6>Bootstrap</h6>
+                <small>UI Framework</small>
+            </div>
+        </div>
+        
+        <div class="col-md-2 col-sm-4 col-6">
+            <div class="tech-stack-item">
+                <i class="fab fa-js-square fa-2x mb-2"></i>
+                <h6>JavaScript</h6>
+                <small>Frontend Logic</small>
+            </div>
+        </div>
+        
+        <div class="col-md-2 col-sm-4 col-6">
+            <div class="tech-stack-item">
+                <i class="fas fa-database fa-2x mb-2"></i>
+                <h6>JSON</h6>
+                <small>Data Storage</small>
+            </div>
+        </div>
+        
+        <div class="col-md-2 col-sm-4 col-6">
+            <div class="tech-stack-item">
+                <i class="fab fa-github fa-2x mb-2"></i>
+                <h6>GitHub</h6>
+                <small>Version Control</small>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Development Timeline -->
+<section class="mb-5">
+    <div class="row">
+        <div class="col-lg-6">
+            <h2 class="mb-4">Development Roadmap</h2>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <h5>Phase 1: Foundation <span class="badge bg-success">Complete</span></h5>
+                    <p class="text-muted mb-2">Initial platform development</p>
+                    <ul class="list-unstyled small">
+                        <li><i class="fas fa-check text-success me-2"></i>Core web application structure</li>
+                        <li><i class="fas fa-check text-success me-2"></i>MITRE ATT&CK integration</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Basic filtering and search</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Responsive design</li>
+                    </ul>
+                </div>
+                
+                <div class="timeline-item">
+                    <h5>Phase 2: Data Sources <span class="badge bg-success">Complete</span></h5>
+                    <p class="text-muted mb-2">Multiple intelligence feeds</p>
+                    <ul class="list-unstyled small">
+                        <li><i class="fas fa-check text-success me-2"></i>CISA alerts integration</li>
+                        <li><i class="fas fa-check text-success me-2"></i>RSS feed aggregation</li>
+                        <li><i class="fas fa-check text-success me-2"></i>AlienVault OTX support</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Automated data refresh</li>
+                    </ul>
+                </div>
+                
+                <div class="timeline-item">
+                    <h5>Phase 3: Analytics <span class="badge bg-warning">In Progress</span></h5>
+                    <p class="text-muted mb-2">Advanced analysis features</p>
+                    <ul class="list-unstyled small">
+                        <li><i class="fas fa-check text-success me-2"></i>Threat trend analysis</li>
+                        <li><i class="fas fa-clock text-warning me-2"></i>Predictive modeling</li>
+                        <li><i class="fas fa-clock text-warning me-2"></i>Risk scoring algorithms</li>
+                        <li><i class="fas fa-clock text-warning me-2"></i>Interactive dashboards</li>
+                    </ul>
+                </div>
+                
+                <div class="timeline-item">
+                    <h5>Phase 4: Enterprise <span class="badge bg-secondary">Planned</span></h5>
+                    <p class="text-muted mb-2">Enterprise-grade features</p>
+                    <ul class="list-unstyled small">
+                        <li><i class="fas fa-clock text-secondary me-2"></i>Multi-user support</li>
+                        <li><i class="fas fa-clock text-secondary me-2"></i>API endpoints</li>
+                        <li><i class="fas fa-clock text-secondary me-2"></i>Custom integrations</li>
+                        <li><i class="fas fa-clock text-secondary me-2"></i>Advanced notifications</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <h2 class="mb-4">Project Statistics</h2>
+            <div class="github-stats mb-4">
+                <div class="row text-center">
+                    <div class="col-4">
+                        <div class="stats-item">
+                            <div class="stats-number">15+</div>
+                            <small>Python Modules</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="stats-item">
+                            <div class="stats-number">2500+</div>
+                            <small>Lines of Code</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="stats-item">
+                            <div class="stats-number">4</div>
+                            <small>Data Sources</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-code me-2"></i>Technical Highlights
+                    </h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <strong>Modular Architecture:</strong> Clean separation of concerns with dedicated service modules
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <strong>Real-time Updates:</strong> Background scheduling for automatic data refresh
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <strong>Responsive Design:</strong> Mobile-first approach with Bootstrap framework
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <strong>Error Handling:</strong> Comprehensive error handling and logging
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <strong>Extensible:</strong> Easy to add new data sources and features
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Installation & Setup -->
+<section class="mb-5">
+    <h2 class="text-center mb-5">Quick Start Guide</h2>
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-rocket me-2"></i>Installation Steps
+                    </h5>
+                    
+                    <div class="mb-4">
+                        <h6>1. Clone the Repository</h6>
+                        <pre class="bg-dark text-light p-3 rounded"><code>git clone https://github.com/your-repo/threat-intel-dashboard.git
+cd threat-intel-dashboard</code></pre>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h6>2. Create Virtual Environment</h6>
+                        <pre class="bg-dark text-light p-3 rounded"><code>python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate</code></pre>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h6>3. Install Dependencies</h6>
+                        <pre class="bg-dark text-light p-3 rounded"><code>pip install -r requirements.txt</code></pre>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h6>4. Configure Environment (Optional)</h6>
+                        <pre class="bg-dark text-light p-3 rounded"><code>export OTX_API_KEY="your-otx-api-key"
+export FLASK_DEBUG=True</code></pre>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h6>5. Run the Application</h6>
+                        <pre class="bg-dark text-light p-3 rounded"><code>python app.py</code></pre>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Note:</strong> The application will be available at 
+                        <code>http://localhost:5000</code> once started.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Configuration -->
+<section class="mb-5">
+    <h2 class="text-center mb-5">Configuration Options</h2>
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-cog me-2 text-primary"></i>Basic Configuration
+                    </h5>
+                    <p class="card-text">Essential settings for getting started:</p>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <code>DEBUG</code> - Enable debug mode for development
+                        </li>
+                        <li class="mb-2">
+                            <code>SECRET_KEY</code> - Flask application secret key
+                        </li>
+                        <li class="mb-2">
+                            <code>DATA_DIR</code> - Directory for storing threat data
+                        </li>
+                        <li class="mb-2">
+                            <code>ITEMS_PER_PAGE</code> - Pagination settings
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-key me-2 text-warning"></i>API Configuration
+                    </h5>
+                    <p class="card-text">API keys for external data sources:</p>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <code>OTX_API_KEY</code> - AlienVault OTX API access
+                        </li>
+                        <li class="mb-2">
+                            <code>SHODAN_API_KEY</code> - Shodan API access (future)
+                        </li>
+                        <li class="mb-2">
+                            <code>REFRESH_INTERVALS</code> - Data update frequencies
+                        </li>
+                        <li class="mb-2">
+                            <code>RSS_FEEDS</code> - Custom RSS feed sources
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contributing -->
+<section class="mb-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="contact-card text-center">
+                <h2 class="mb-4">Contributing</h2>
+                <p class="lead mb-4">
+                    We welcome contributions from the cybersecurity community!
+                </p>
+                <p class="mb-4">
+                    Whether you're reporting bugs, suggesting features, improving documentation, 
+                    or contributing code, your involvement helps make this platform better for everyone.
+                </p>
+                
+                <div class="row g-4 mt-4">
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="fas fa-bug fa-2x text-danger mb-3"></i>
+                            <h5>Report Issues</h5>
+                            <p class="small text-muted">Found a bug or have a feature request?</p>
+                            <a href="https://github.com/your-repo/threat-intel-dashboard/issues" 
+                               target="_blank" class="btn btn-outline-primary btn-sm">
+                                Open Issue
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="fas fa-code-branch fa-2x text-success mb-3"></i>
+                            <h5>Submit PRs</h5>
+                            <p class="small text-muted">Contribute code improvements</p>
+                            <a href="https://github.com/your-repo/threat-intel-dashboard/pulls" 
+                               target="_blank" class="btn btn-outline-success btn-sm">
+                                Create PR
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="fas fa-book fa-2x text-info mb-3"></i>
+                            <h5>Documentation</h5>
+                            <p class="small text-muted">Help improve documentation</p>
+                            <a href="https://github.com/your-repo/threat-intel-dashboard/wiki" 
+                               target="_blank" class="btn btn-outline-info btn-sm">
+                                View Wiki
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- License & Disclaimer -->
+<section class="mb-5">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-balance-scale me-2 text-success"></i>License
+                    </h5>
+                    <p class="card-text">
+                        This project is licensed under the MIT License, making it free to use, 
+                        modify, and distribute for both commercial and non-commercial purposes.
+                    </p>
+                    <a href="https://github.com/your-repo/threat-intel-dashboard/blob/main/LICENSE" 
+                       target="_blank" class="btn btn-outline-success">
+                        View License
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-exclamation-triangle me-2 text-warning"></i>Disclaimer
+                    </h5>
+                    <p class="card-text">
+                        This tool is provided for educational and research purposes. Users are responsible 
+                        for ensuring compliance with applicable laws and regulations in their jurisdiction.
+                    </p>
+                    <small class="text-muted">
+                        Always verify threat intelligence from multiple sources before taking action.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact & Support -->
+<section class="mb-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="contact-card text-center">
+                <h2 class="mb-4">Support & Contact</h2>
+                <p class="mb-4">
+                    Need help or have questions? We're here to assist!
+                </p>
+                
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="fab fa-github fa-2x text-dark mb-3"></i>
+                            <h6>GitHub</h6>
+                            <p class="small text-muted">Issues, discussions, and code</p>
+                            <a href="https://github.com/your-repo/threat-intel-dashboard" 
+                               target="_blank" class="btn btn-outline-dark btn-sm">
+                                Visit Repository
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="fas fa-envelope fa-2x text-primary mb-3"></i>
+                            <h6>Email</h6>
+                            <p class="small text-muted">Direct support and inquiries</p>
+                            <a href="mailto:support@threatinteldashboard.com" 
+                               class="btn btn-outline-primary btn-sm">
+                                Send Email
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="fab fa-discord fa-2x text-indigo mb-3"></i>
+                            <h6>Community</h6>
+                            <p class="small text-muted">Join our community chat</p>
+                            <a href="#" class="btn btn-outline-secondary btn-sm">
+                                Join Discord
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Acknowledgments -->
+<section class="mb-5">
+    <h2 class="text-center mb-5">Acknowledgments</h2>
+    <div class="row text-center">
+        <div class="col-lg-10 mx-auto">
+            <p class="lead text-muted mb-4">
+                This project builds upon the excellent work of the cybersecurity community
+            </p>
+            <div class="row g-4">
+                <div class="col-md-3 col-sm-6">
+                    <div class="text-center">
+                        <i class="fas fa-shield-alt fa-2x text-primary mb-2"></i>
+                        <h6>MITRE Corporation</h6>
+                        <small class="text-muted">ATT&CK Framework</small>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="text-center">
+                        <i class="fas fa-flag-usa fa-2x text-info mb-2"></i>
+                        <h6>CISA</h6>
+                        <small class="text-muted">Security Advisories</small>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="text-center">
+                        <i class="fas fa-users fa-2x text-success mb-2"></i>
+                        <h6>Security Community</h6>
+                        <small class="text-muted">Open Source Intelligence</small>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="text-center">
+                        <i class="fas fa-code fa-2x text-warning mb-2"></i>
+                        <h6>Open Source Projects</h6>
+                        <small class="text-muted">Flask, Bootstrap & More</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Smooth scrolling for anchor links
+    const links = document.querySelectorAll('a[href^="#"]');
+    links.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+    
+    // Animate tech stack items on scroll
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('fade-in');
+            }
+        });
+    }, observerOptions);
+    
+    // Observe tech stack items and feature cards
+    document.querySelectorAll('.tech-stack-item, .feature-card, .timeline-item').forEach(item => {
+        observer.observe(item);
+    });
+    
+    // Copy code snippets to clipboard
+    document.querySelectorAll('pre code').forEach(block => {
+        const button = document.createElement('button');
+        button.className = 'btn btn-sm btn-outline-light position-absolute';
+        button.style.top = '10px';
+        button.style.right = '10px';
+        button.innerHTML = '<i class="fas fa-copy"></i>';
+        button.title = 'Copy to clipboard';
+        
+        const pre = block.parentNode;
+        pre.style.position = 'relative';
+        pre.appendChild(button);
+        
+        button.addEventListener('click', function() {
+            navigator.clipboard.writeText(block.textContent).then(() => {
+                button.innerHTML = '<i class="fas fa-check text-success"></i>';
+                setTimeout(() => {
+                    button.innerHTML = '<i class="fas fa-copy"></i>';
+                }, 2000);
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = block.textContent;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                button.innerHTML = '<i class="fas fa-check text-success"></i>';
+                setTimeout(() => {
+                    button.innerHTML = '<i class="fas fa-copy"></i>';
+                }, 2000);
+            });
+        });
+    });
+    
+    // Update GitHub stats (mock data)
+    setTimeout(() => {
+        const statsNumbers = document.querySelectorAll('.stats-number');
+        statsNumbers.forEach(stat => {
+            const finalValue = parseInt(stat.textContent);
+            const increment = Math.ceil(finalValue / 50);
+            let currentValue = 0;
+            
+            const timer = setInterval(() => {
+                currentValue += increment;
+                if (currentValue >= finalValue) {
+                    currentValue = finalValue;
+                    clearInterval(timer);
+                }
+                stat.textContent = currentValue + (stat.textContent.includes('+') ? '+' : '');
+            }, 30);
+        });
+    }, 500);
+});
+</script>
+{% endblock %}

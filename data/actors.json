@@ -1,0 +1,514 @@
+[
+  {
+    "id": "apt1",
+    "name": "APT1",
+    "description": "Chinese cyber espionage group, also known as Comment Crew. Attributed to PLA Unit 61398, this group has conducted extensive intellectual property theft and espionage operations against organizations worldwide.",
+    "country": "China",
+    "aliases": [
+      "Comment Crew",
+      "PLA Unit 61398",
+      "Advanced Persistent Threat 1"
+    ],
+    "targets": [
+      "Government",
+      "Military",
+      "Private Companies",
+      "Technology",
+      "Financial Services"
+    ],
+    "techniques": [
+      "Spear Phishing",
+      "Remote Access Tools",
+      "Data Exfiltration",
+      "Credential Harvesting",
+      "Lateral Movement"
+    ],
+    "tools": [
+      "WEBC2",
+      "BACKDOOR.BARKIOFORK",
+      "TROJAN.ECLTYS",
+      "Custom RATs",
+      "Web Shells"
+    ],
+    "active_since": "2006",
+    "last_activity": "2018",
+    "sophistication": "High",
+    "attribution_confidence": "High",
+    "motivation": "Espionage",
+    "campaigns": [
+      "Operation Aurora",
+      "Operation Shady RAT",
+      "APT1 Expos\u00e9 Campaign"
+    ],
+    "malware_families": [
+      "WEBC2",
+      "BARKIOFORK",
+      "ECLTYS"
+    ],
+    "references": [
+      "https://www.mandiant.com/resources/apt1-exposing-one-of-chinas-cyber-espionage-units",
+      "https://attack.mitre.org/groups/G0006/"
+    ],
+    "source": "MITRE ATT&CK"
+  },
+  {
+    "id": "apt28",
+    "name": "APT28",
+    "description": "Russian military intelligence cyber unit, also known as Fancy Bear. Attributed to GRU Unit 26165, this group is known for sophisticated attacks against government, military, and media organizations.",
+    "country": "Russia",
+    "aliases": [
+      "Fancy Bear",
+      "Pawn Storm",
+      "Sofacy",
+      "Sednit",
+      "STRONTIUM"
+    ],
+    "targets": [
+      "Government",
+      "Military",
+      "Media",
+      "Political Organizations",
+      "Think Tanks"
+    ],
+    "techniques": [
+      "Zero-day Exploits",
+      "Spear Phishing",
+      "Credential Harvesting",
+      "Supply Chain Attacks",
+      "Living off the Land"
+    ],
+    "tools": [
+      "X-Agent",
+      "Komplex",
+      "CHOPSTICK",
+      "JHUHUGIT",
+      "Zebrocy"
+    ],
+    "active_since": "2007",
+    "last_activity": "2024",
+    "sophistication": "High",
+    "attribution_confidence": "High",
+    "motivation": "Espionage",
+    "campaigns": [
+      "DNC Hack",
+      "Olympic Destroyer",
+      "VPNFilter",
+      "Credential Harvesting"
+    ],
+    "malware_families": [
+      "X-Agent",
+      "Komplex",
+      "GAMEFISH",
+      "Zebrocy"
+    ],
+    "references": [
+      "https://attack.mitre.org/groups/G0007/",
+      "https://www.crowdstrike.com/blog/bears-midst-intrusion-democratic-national-committee/"
+    ],
+    "source": "MITRE ATT&CK"
+  },
+  {
+    "id": "apt29",
+    "name": "APT29",
+    "description": "Russian intelligence service group, also known as Cozy Bear. Attributed to SVR, this group is known for sophisticated, long-term espionage campaigns with advanced evasion techniques.",
+    "country": "Russia",
+    "aliases": [
+      "Cozy Bear",
+      "CozyDuke",
+      "The Dukes",
+      "NOBELIUM",
+      "Dark Halo"
+    ],
+    "targets": [
+      "Government",
+      "Healthcare",
+      "Technology",
+      "Pharmaceuticals",
+      "Think Tanks"
+    ],
+    "techniques": [
+      "Supply Chain Attacks",
+      "Living off the Land",
+      "Steganography",
+      "Cloud Service Abuse",
+      "Token Theft"
+    ],
+    "tools": [
+      "HAMMERTOSS",
+      "POWERDUKE",
+      "COZYDUKE",
+      "MINIDIONIS",
+      "Cobalt Strike"
+    ],
+    "active_since": "2008",
+    "last_activity": "2024",
+    "sophistication": "High",
+    "attribution_confidence": "High",
+    "motivation": "Espionage",
+    "campaigns": [
+      "SolarWinds Supply Chain",
+      "COVID-19 Vaccine Research",
+      "Microsoft Exchange Server"
+    ],
+    "malware_families": [
+      "HAMMERTOSS",
+      "POWERDUKE",
+      "COZYDUKE",
+      "SUNBURST"
+    ],
+    "references": [
+      "https://attack.mitre.org/groups/G0016/",
+      "https://www.microsoft.com/security/blog/2020/12/13/customer-guidance-on-recent-nation-state-cyber-attacks/"
+    ],
+    "source": "MITRE ATT&CK"
+  },
+  {
+    "id": "lazarus",
+    "name": "Lazarus Group",
+    "description": "North Korean state-sponsored group behind major cyber attacks including Sony Pictures hack and WannaCry ransomware. Known for destructive attacks and financial theft operations.",
+    "country": "North Korea",
+    "aliases": [
+      "HIDDEN COBRA",
+      "Guardians of Peace",
+      "ZINC",
+      "Dark Seoul"
+    ],
+    "targets": [
+      "Financial",
+      "Cryptocurrency",
+      "Entertainment",
+      "Government",
+      "Critical Infrastructure"
+    ],
+    "techniques": [
+      "Destructive Malware",
+      "Financial Theft",
+      "Ransomware",
+      "Watering Hole",
+      "Supply Chain"
+    ],
+    "tools": [
+      "WannaCry",
+      "FALLCHILL",
+      "HOPLIGHT",
+      "ELECTRICFISH",
+      "BADCALL"
+    ],
+    "active_since": "2009",
+    "last_activity": "2024",
+    "sophistication": "High",
+    "attribution_confidence": "High",
+    "motivation": "Financial Gain",
+    "campaigns": [
+      "Sony Pictures Attack",
+      "WannaCry",
+      "SWIFT Banking Attacks",
+      "Cryptocurrency Exchange Hacks"
+    ],
+    "malware_families": [
+      "WannaCry",
+      "FALLCHILL",
+      "HOPLIGHT",
+      "BADCALL"
+    ],
+    "references": [
+      "https://attack.mitre.org/groups/G0032/",
+      "https://www.us-cert.gov/ncas/alerts/TA17-318A"
+    ],
+    "source": "MITRE ATT&CK"
+  },
+  {
+    "id": "apt40",
+    "name": "APT40",
+    "description": "Chinese state-sponsored group focusing on maritime and engineering industries. Known for targeting intellectual property and sensitive commercial information.",
+    "country": "China",
+    "aliases": [
+      "Leviathan",
+      "MUDCARP",
+      "Bronze Mohawk",
+      "GADOLINIUM"
+    ],
+    "targets": [
+      "Maritime",
+      "Engineering",
+      "Transportation",
+      "Government",
+      "Research"
+    ],
+    "techniques": [
+      "Web Shell Deployment",
+      "Credential Dumping",
+      "Remote Services",
+      "Valid Accounts"
+    ],
+    "tools": [
+      "China Chopper",
+      "BADFLICK",
+      "PHOTO",
+      "HOMEFRY",
+      "MURKYTOP"
+    ],
+    "active_since": "2013",
+    "last_activity": "2023",
+    "sophistication": "Medium",
+    "attribution_confidence": "Medium",
+    "motivation": "Espionage",
+    "campaigns": [
+      "Maritime Industry Espionage",
+      "COVID-19 Research Targeting"
+    ],
+    "malware_families": [
+      "China Chopper",
+      "BADFLICK",
+      "PHOTO"
+    ],
+    "references": [
+      "https://attack.mitre.org/groups/G0065/",
+      "https://www.fireeye.com/blog/threat-research/2018/03/suspected-chinese-espionage-group-targeting-maritime-and-engineering-industries.html"
+    ],
+    "source": "MITRE ATT&CK"
+  },
+  {
+    "id": "fin7",
+    "name": "FIN7",
+    "description": "Financially motivated threat group that has been associated with malicious operations dating back to late 2013. Known for targeting retail, restaurant, and hospitality sectors.",
+    "country": "Unknown",
+    "aliases": [
+      "Carbanak Group",
+      "Navigator Group",
+      "Carbon Spider"
+    ],
+    "targets": [
+      "Retail",
+      "Restaurant",
+      "Hospitality",
+      "Financial Services"
+    ],
+    "techniques": [
+      "Spear Phishing",
+      "PowerShell",
+      "DLL Side-Loading",
+      "Persistence",
+      "Point-of-Sale Malware"
+    ],
+    "tools": [
+      "CARBANAK",
+      "HALFBAKED",
+      "GRIFFON",
+      "POWERSOURCE",
+      "Cobalt Strike"
+    ],
+    "active_since": "2013",
+    "last_activity": "2023",
+    "sophistication": "High",
+    "attribution_confidence": "Medium",
+    "motivation": "Financial Gain",
+    "campaigns": [
+      "Carbanak Campaign",
+      "Restaurant Chain Attacks",
+      "Hospitality Sector Targeting"
+    ],
+    "malware_families": [
+      "CARBANAK",
+      "HALFBAKED",
+      "GRIFFON"
+    ],
+    "references": [
+      "https://attack.mitre.org/groups/G0046/",
+      "https://www.fireeye.com/blog/threat-research/2017/04/fin7-phishing-lnk.html"
+    ],
+    "source": "MITRE ATT&CK"
+  },
+  {
+    "id": "apt32",
+    "name": "APT32",
+    "description": "Vietnamese threat group that has been active since at least 2014. Known as OceanLotus, this group targets foreign corporations, dissidents, and journalists.",
+    "country": "Vietnam",
+    "aliases": [
+      "OceanLotus",
+      "SeaLotus",
+      "APT-C-00",
+      "Cobalt Kitty"
+    ],
+    "targets": [
+      "Government",
+      "Corporations",
+      "Dissidents",
+      "Journalists",
+      "Manufacturing"
+    ],
+    "techniques": [
+      "Spear Phishing",
+      "Strategic Web Compromises",
+      "Backdoors",
+      "Living off the Land"
+    ],
+    "tools": [
+      "WINDSHIELD",
+      "BEACON",
+      "SOUNDBITE",
+      "PHOREAL",
+      "ROTLOGS"
+    ],
+    "active_since": "2014",
+    "last_activity": "2023",
+    "sophistication": "High",
+    "attribution_confidence": "High",
+    "motivation": "Espionage",
+    "campaigns": [
+      "Southeast Asian Government Targeting",
+      "Foreign Corporation Espionage"
+    ],
+    "malware_families": [
+      "WINDSHIELD",
+      "BEACON",
+      "SOUNDBITE"
+    ],
+    "references": [
+      "https://attack.mitre.org/groups/G0050/",
+      "https://www.volexity.com/blog/2017/11/06/oceanlotus-blossoms-mass-digital-surveillance-and-exploitation-of-asean-nations-the-media-human-rights-and-civil-society/"
+    ],
+    "source": "MITRE ATT&CK"
+  },
+  {
+    "id": "darkhydrus",
+    "name": "DarkHydrus",
+    "description": "Threat group that has targeted government entities and educational institutions in the Middle East since 2016. Known for using open source tools and living off the land techniques.",
+    "country": "Unknown",
+    "aliases": [
+      "DarkHydrus Group"
+    ],
+    "targets": [
+      "Government",
+      "Education",
+      "Middle Eastern Organizations"
+    ],
+    "techniques": [
+      "Spear Phishing",
+      "Template Injection",
+      "PowerShell",
+      "Scheduled Tasks"
+    ],
+    "tools": [
+      "RogueRobin",
+      "POWERSTATS",
+      "Open Source Tools"
+    ],
+    "active_since": "2016",
+    "last_activity": "2022",
+    "sophistication": "Medium",
+    "attribution_confidence": "Medium",
+    "motivation": "Espionage",
+    "campaigns": [
+      "Middle East Government Targeting",
+      "Educational Institution Compromise"
+    ],
+    "malware_families": [
+      "RogueRobin",
+      "POWERSTATS"
+    ],
+    "references": [
+      "https://attack.mitre.org/groups/G0079/",
+      "https://unit42.paloaltonetworks.com/darkhydrus-delivers-new-trojan-that-can-use-google-drive-for-c2-communications/"
+    ],
+    "source": "MITRE ATT&CK"
+  },
+  {
+    "id": "ta505",
+    "name": "TA505",
+    "description": "Financially motivated threat group that has been active since at least 2014. Known for frequent use of malware families like Dridex, ServHelper, and FlawedGrace.",
+    "country": "Unknown",
+    "aliases": [
+      "TA505 Group"
+    ],
+    "targets": [
+      "Financial",
+      "Retail",
+      "Government",
+      "Healthcare"
+    ],
+    "techniques": [
+      "Mass Email Campaigns",
+      "Macro-enabled Documents",
+      "Backdoors",
+      "Banking Trojans"
+    ],
+    "tools": [
+      "Dridex",
+      "ServHelper",
+      "FlawedGrace",
+      "AndroMut",
+      "Cobalt Strike"
+    ],
+    "active_since": "2014",
+    "last_activity": "2023",
+    "sophistication": "Medium",
+    "attribution_confidence": "Medium",
+    "motivation": "Financial Gain",
+    "campaigns": [
+      "Banking Trojan Campaigns",
+      "Ransomware Distribution",
+      "Cryptocurrency Theft"
+    ],
+    "malware_families": [
+      "Dridex",
+      "ServHelper",
+      "FlawedGrace"
+    ],
+    "references": [
+      "https://attack.mitre.org/groups/G0092/",
+      "https://www.proofpoint.com/us/threat-insight/post/threat-actor-profile-ta505-dridex-globeimposter"
+    ],
+    "source": "MITRE ATT&CK"
+  },
+  {
+    "id": "equation",
+    "name": "Equation Group",
+    "description": "Highly sophisticated threat group with suspected ties to the NSA. Known for advanced persistent threats and zero-day exploits targeting high-value intelligence targets.",
+    "country": "United States",
+    "aliases": [
+      "Equation",
+      "EQGRP"
+    ],
+    "targets": [
+      "Government",
+      "Military",
+      "Telecommunications",
+      "Aerospace",
+      "Nuclear Research"
+    ],
+    "techniques": [
+      "Zero-day Exploits",
+      "Firmware Implants",
+      "Hard Drive Firmware",
+      "Encrypted Communications"
+    ],
+    "tools": [
+      "DoubleFantasy",
+      "EquationDrug",
+      "GrayFish",
+      "Fanny",
+      "EternalBlue"
+    ],
+    "active_since": "2001",
+    "last_activity": "2017",
+    "sophistication": "High",
+    "attribution_confidence": "Medium",
+    "motivation": "Espionage",
+    "campaigns": [
+      "Stuxnet",
+      "Flame",
+      "NSA Tools Leak"
+    ],
+    "malware_families": [
+      "DoubleFantasy",
+      "EquationDrug",
+      "GrayFish"
+    ],
+    "references": [
+      "https://securelist.com/equation-group-questions-and-answers/69203/",
+      "https://www.kaspersky.com/blog/equation-hdd-malware/"
+    ],
+    "source": "MITRE ATT&CK"
+  }
+]

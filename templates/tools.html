@@ -1,0 +1,718 @@
+{% extends "base.html" %}
+
+{% block title %}Security Tools - Threat Intel Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tool-card {
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+    }
+    
+    .tool-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        border-left-color: var(--primary-color);
+    }
+    
+    .tool-category {
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .risk-level-high {
+        border-left-color: #dc3545 !important;
+    }
+    
+    .risk-level-medium {
+        border-left-color: #ffc107 !important;
+    }
+    
+    .risk-level-low {
+        border-left-color: #28a745 !important;
+    }
+    
+    .dual-use-indicator {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: linear-gradient(45deg, #28a745, #17a2b8);
+        color: white;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: bold;
+    }
+    
+    .platform-badges .badge {
+        margin-right: 0.25rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .used-by-list {
+        max-height: 100px;
+        overflow-y: auto;
+    }
+    
+    .tool-stats {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .category-filter {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+    }
+    
+    .category-filter .nav-link {
+        border-radius: 20px;
+        padding: 0.5rem 1rem;
+        border: 1px solid #dee2e6;
+        color: #6c757d;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+    
+    .category-filter .nav-link:hover,
+    .category-filter .nav-link.active {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1">
+            <i class="fas fa-tools text-warning me-3"></i>
+            Security Tools & Techniques
+        </h2>
+        <p class="text-muted mb-0">Comprehensive database of tools used by threat actors and security professionals</p>
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-primary" onclick="exportFilteredResults()">
+            <i class="fas fa-download me-2"></i>Export
+        </button>
+        <button class="btn btn-primary" onclick="refreshData()">
+            <i class="fas fa-sync-alt me-2"></i>Refresh
+        </button>
+    </div>
+</div>
+
+<!-- Tool Statistics -->
+<div class="tool-stats">
+    <div class="row text-center">
+        <div class="col-md-3">
+            <div class="stat-item">
+                <div class="h4 text-primary mb-1">{{ tools|length }}</div>
+                <small class="text-muted">Total Tools</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-item">
+                <div class="h4 text-success mb-1">
+                    {% set dual_use_count = 0 %}
+                    {% for tool in tools %}
+                        {% if tool.is_legitimate %}
+                            {% set dual_use_count = dual_use_count + 1 %}
+                        {% endif %}
+                    {% endfor %}
+                    {{ dual_use_count }}
+                </div>
+                <small class="text-muted">Dual-Use Tools</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-item">
+                <div class="h4 text-warning mb-1">
+                    {% set malware_count = 0 %}
+                    {% for tool in tools %}
+                        {% if tool.category == 'Malware' %}
+                            {% set malware_count = malware_count + 1 %}
+                        {% endif %}
+                    {% endfor %}
+                    {{ malware_count }}
+                </div>
+                <small class="text-muted">Malware Tools</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-item">
+                <div class="h4 text-info mb-1">
+                    {% set total_associations = 0 %}
+                    {% for tool in tools %}
+                        {% set total_associations = total_associations + tool.used_by|length %}
+                    {% endfor %}
+                    {{ total_associations }}
+                </div>
+                <small class="text-muted">Actor Associations</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search and Filter Bar -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-6">
+                <label for="toolSearch" class="form-label">Search Tools</label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="text" id="toolSearch" class="form-control" 
+                           placeholder="Search by name, description, or category...">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <label for="platformFilter" class="form-label">Platform</label>
+                <select id="platformFilter" class="form-select">
+                    <option value="">All Platforms</option>
+                    <option value="Windows">Windows</option>
+                    <option value="Linux">Linux</option>
+                    <option value="macOS">macOS</option>
+                    <option value="Cross-platform">Cross-platform</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="riskFilter" class="form-label">Risk Level</label>
+                <select id="riskFilter" class="form-select">
+                    <option value="">All Levels</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-outline-secondary w-100" onclick="clearToolFilters()">
+                    <i class="fas fa-times me-1"></i>Clear
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Category Filter Pills -->
+<div class="category-filter">
+    <a href="#" class="nav-link active" data-category="">All Categories</a>
+    <a href="#" class="nav-link" data-category="Command and Control">C&C</a>
+    <a href="#" class="nav-link" data-category="Credential Access">Credential Access</a>
+    <a href="#" class="nav-link" data-category="Dual-use Tool">Dual-Use</a>
+    <a href="#" class="nav-link" data-category="Exploitation">Exploitation</a>
+    <a href="#" class="nav-link" data-category="Malware">Malware</a>
+    <a href="#" class="nav-link" data-category="Network">Network</a>
+    <a href="#" class="nav-link" data-category="Post-Exploitation">Post-Exploitation</a>
+</div>
+
+<!-- Tools Grid -->
+<div id="toolsContainer" class="row">
+    {% if tools %}
+        {% for tool in tools %}
+        <div class="col-lg-6 col-xl-4 mb-4 tool-item" 
+             data-category="{{ tool.category }}"
+             data-platforms="{{ tool.platforms|join(',') }}"
+             data-risk="Medium"
+             data-name="{{ tool.name|lower }}"
+             data-description="{{ tool.description|lower }}">
+            <div class="card tool-card h-100 risk-level-{{ (tool.get_risk_level() if tool.get_risk_level else 'Low')|lower }}">
+                <div class="card-body position-relative">
+                    <!-- Dual-use indicator -->
+                    {% if tool.is_legitimate %}
+                    <div class="dual-use-indicator">
+                        DUAL-USE
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Header -->
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="flex-grow-1">
+                            <div class="tool-category text-muted mb-1">{{ tool.category }}</div>
+                            <h5 class="card-title mb-0">{{ tool.name }}</h5>
+                        </div>
+                        <div class="tool-icon">
+                            {% if tool.category == 'Malware' %}
+                            <i class="fas fa-virus fa-2x text-danger"></i>
+                            {% elif tool.category == 'Command and Control' %}
+                            <i class="fas fa-satellite fa-2x text-info"></i>
+                            {% elif tool.category == 'Credential Access' %}
+                            <i class="fas fa-key fa-2x text-warning"></i>
+                            {% elif tool.category == 'Network' %}
+                            <i class="fas fa-network-wired fa-2x text-primary"></i>
+                            {% else %}
+                            <i class="fas fa-cog fa-2x text-secondary"></i>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Description -->
+                    <p class="card-text text-muted mb-3">
+                        {{ tool.description|truncate_text(100) }}
+                    </p>
+                    
+                    <!-- Platforms -->
+                    {% if tool.platforms %}
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-1">
+                            <i class="fas fa-desktop me-1"></i>Platforms:
+                        </small>
+                        <div class="platform-badges">
+                            {% for platform in tool.platforms %}
+                            <span class="badge bg-info">{{ platform }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- MITRE Techniques -->
+                    {% if tool.techniques %}
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-1">
+                            <i class="fas fa-crosshairs me-1"></i>MITRE Techniques:
+                        </small>
+                        <div>
+                            {% for technique in tool.techniques[:3] %}
+                            <span class="badge bg-secondary me-1">{{ technique }}</span>
+                            {% endfor %}
+                            {% if tool.techniques|length > 3 %}
+                            <span class="badge bg-light text-dark">+{{ tool.techniques|length - 3 }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Used By -->
+                    {% if tool.used_by %}
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-1">
+                            <i class="fas fa-users me-1"></i>Used by:
+                        </small>
+                        <div class="used-by-list">
+                            {% for actor in tool.used_by[:5] %}
+                            <span class="badge bg-danger me-1 mb-1">{{ actor }}</span>
+                            {% endfor %}
+                            {% if tool.used_by|length > 5 %}
+                            <span class="badge bg-light text-dark">+{{ tool.used_by|length - 5 }} more</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Footer -->
+                    <div class="mt-auto">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="risk-indicator">
+                                <small class="text-muted">Risk Level:</small>
+                                <span class="badge 
+                                    {% set risk_level = 'Medium' %}
+                                    {% if risk_level == 'High' %}bg-danger
+                                    {% elif risk_level == 'Medium' %}bg-warning
+                                    {% else %}bg-success{% endif %}">
+                                    {{ risk_level }}
+                                </span>
+                            </div>
+                            {% if tool.availability %}
+                            <small class="text-muted">{{ tool.availability }}</small>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-1">
+                            <button class="btn btn-sm btn-outline-primary flex-fill" 
+                                    onclick="showToolDetails('{{ tool.id }}')"
+                                    title="View Details">
+                                <i class="fas fa-info-circle me-1"></i>Details
+                            </button>
+                            {% if tool.references %}
+                            <button class="btn btn-sm btn-outline-secondary" 
+                                    onclick="showToolReferences('{{ tool.id }}')"
+                                    title="View References">
+                                <i class="fas fa-external-link-alt"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <!-- Empty State -->
+        <div class="col-12">
+            <div class="text-center py-5">
+                <div class="empty-state">
+                    <i class="fas fa-tools fa-4x text-muted mb-4 opacity-50"></i>
+                    <h4>No Tools Found</h4>
+                    <p class="text-muted mb-4">No security tools have been loaded yet.</p>
+                    <button class="btn btn-primary" onclick="refreshData()">
+                        <i class="fas fa-sync-alt me-2"></i>Load Tools Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- No Results Message (Hidden by default) -->
+<div id="noResultsMessage" class="text-center py-5" style="display: none;">
+    <div class="empty-state">
+        <i class="fas fa-search fa-4x text-muted mb-4 opacity-50"></i>
+        <h4>No Tools Match Your Search</h4>
+        <p class="text-muted mb-4">Try adjusting your search criteria or filters.</p>
+        <button class="btn btn-outline-primary" onclick="clearToolFilters()">
+            <i class="fas fa-times me-2"></i>Clear All Filters
+        </button>
+    </div>
+</div>
+
+<!-- Tool Details Modal -->
+<div class="modal fade" id="toolDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Tool Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="toolDetailsContent">
+                <!-- Content loaded dynamically -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tool References Modal -->
+<div class="modal fade" id="toolReferencesModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">References</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="toolReferencesContent">
+                <!-- Content loaded dynamically -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Tool filtering functionality
+let currentFilters = {
+    search: '',
+    category: '',
+    platform: '',
+    risk: ''
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeToolFilters();
+});
+
+function initializeToolFilters() {
+    // Search input
+    const searchInput = document.getElementById('toolSearch');
+    let searchTimeout;
+    
+    searchInput?.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            currentFilters.search = this.value.toLowerCase().trim();
+            applyToolFilters();
+        }, 300);
+    });
+    
+    // Platform filter
+    const platformFilter = document.getElementById('platformFilter');
+    platformFilter?.addEventListener('change', function() {
+        currentFilters.platform = this.value;
+        applyToolFilters();
+    });
+    
+    // Risk filter
+    const riskFilter = document.getElementById('riskFilter');
+    riskFilter?.addEventListener('change', function() {
+        currentFilters.risk = this.value;
+        applyToolFilters();
+    });
+    
+    // Category filter pills
+    const categoryLinks = document.querySelectorAll('.category-filter .nav-link');
+    categoryLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Update active state
+            categoryLinks.forEach(l => l.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Apply filter
+            currentFilters.category = this.dataset.category;
+            applyToolFilters();
+        });
+    });
+}
+
+function applyToolFilters() {
+    const toolItems = document.querySelectorAll('.tool-item');
+    const noResultsMessage = document.getElementById('noResultsMessage');
+    let visibleCount = 0;
+    
+    toolItems.forEach(item => {
+        let shouldShow = true;
+        
+        // Search filter
+        if (currentFilters.search) {
+            const searchText = item.dataset.name + ' ' + item.dataset.description;
+            if (!searchText.includes(currentFilters.search)) {
+                shouldShow = false;
+            }
+        }
+        
+        // Category filter
+        if (currentFilters.category && item.dataset.category !== currentFilters.category) {
+            shouldShow = false;
+        }
+        
+        // Platform filter
+        if (currentFilters.platform) {
+            const platforms = item.dataset.platforms.split(',');
+            if (!platforms.includes(currentFilters.platform)) {
+                shouldShow = false;
+            }
+        }
+        
+        // Risk filter
+        if (currentFilters.risk && item.dataset.risk !== currentFilters.risk) {
+            shouldShow = false;
+        }
+        
+        // Show/hide item
+        if (shouldShow) {
+            item.style.display = 'block';
+            item.classList.add('fade-in');
+            visibleCount++;
+        } else {
+            item.style.display = 'none';
+            item.classList.remove('fade-in');
+        }
+    });
+    
+    // Show/hide no results message
+    if (visibleCount === 0) {
+        noResultsMessage.style.display = 'block';
+        document.getElementById('toolsContainer').style.display = 'none';
+    } else {
+        noResultsMessage.style.display = 'none';
+        document.getElementById('toolsContainer').style.display = 'flex';
+    }
+    
+    // Update results count
+    updateToolsCount(visibleCount, toolItems.length);
+}
+
+function updateToolsCount(visible, total) {
+    // Update any results counter if it exists
+    const counter = document.querySelector('.results-count');
+    if (counter) {
+        counter.textContent = `Showing ${visible} of ${total} tools`;
+    }
+}
+
+function clearToolFilters() {
+    currentFilters = {
+        search: '',
+        category: '',
+        platform: '',
+        risk: ''
+    };
+    
+    // Reset form controls
+    document.getElementById('toolSearch').value = '';
+    document.getElementById('platformFilter').value = '';
+    document.getElementById('riskFilter').value = '';
+    
+    // Reset category pills
+    const categoryLinks = document.querySelectorAll('.category-filter .nav-link');
+    categoryLinks.forEach(link => link.classList.remove('active'));
+    categoryLinks[0].classList.add('active');
+    
+    // Apply filters
+    applyToolFilters();
+    
+    // Show success message
+    if (window.ThreatDashboard && window.ThreatDashboard.showAlert) {
+        window.ThreatDashboard.showAlert('Filters cleared', 'info', 2000);
+    }
+}
+
+function showToolDetails(toolId) {
+    const modal = new bootstrap.Modal(document.getElementById('toolDetailsModal'));
+    const content = document.getElementById('toolDetailsContent');
+    
+    // Find tool data from the DOM
+    const toolCard = document.querySelector(`[data-name*="${toolId}"], .tool-item`);
+    if (!toolCard) {
+        content.innerHTML = '<p class="text-muted">Tool details not found.</p>';
+        modal.show();
+        return;
+    }
+    
+    // Extract tool information from the card
+    const toolName = toolCard.querySelector('.card-title')?.textContent || 'Unknown Tool';
+    const toolCategory = toolCard.querySelector('.tool-category')?.textContent || 'Unknown';
+    const toolDescription = toolCard.querySelector('.card-text')?.textContent || 'No description available.';
+    const riskLevel = toolCard.dataset.risk || 'Unknown';
+    const platforms = toolCard.dataset.platforms ? toolCard.dataset.platforms.split(',') : [];
+    
+    // Get techniques and actors from badges
+    const techniques = Array.from(toolCard.querySelectorAll('.badge.bg-secondary')).map(el => el.textContent);
+    const actors = Array.from(toolCard.querySelectorAll('.badge.bg-danger')).map(el => el.textContent);
+    
+    const isDualUse = toolCard.querySelector('.dual-use-indicator') !== null;
+    
+    content.innerHTML = `
+        <div class="tool-details">
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <h4>${toolName}</h4>
+                    <p class="text-muted">${toolCategory}</p>
+                    ${isDualUse ? '<span class="badge bg-success">Dual-Use Tool</span>' : ''}
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="risk-badge">
+                        <span class="badge ${riskLevel === 'High' ? 'bg-danger' : riskLevel === 'Medium' ? 'bg-warning' : 'bg-success'} fs-6">
+                            ${riskLevel} Risk
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <h6>Description</h6>
+                <p>${toolDescription}</p>
+            </div>
+            
+            ${platforms.length > 0 ? `
+            <div class="mb-4">
+                <h6>Supported Platforms</h6>
+                <div>
+                    ${platforms.map(platform => `<span class="badge bg-info me-1">${platform.trim()}</span>`).join('')}
+                </div>
+            </div>
+            ` : ''}
+            
+            ${techniques.length > 0 ? `
+            <div class="mb-4">
+                <h6>Associated MITRE ATT&CK Techniques</h6>
+                <div>
+                    ${techniques.map(technique => `<span class="badge bg-secondary me-1 mb-1">${technique}</span>`).join('')}
+                </div>
+            </div>
+            ` : ''}
+            
+            ${actors.length > 0 ? `
+            <div class="mb-4">
+                <h6>Known Users</h6>
+                <div>
+                    ${actors.map(actor => `<span class="badge bg-danger me-1 mb-1">${actor}</span>`).join('')}
+                </div>
+            </div>
+            ` : ''}
+            
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Detection:</strong> ${getDetectionAdvice(toolCategory)}
+            </div>
+            
+            <div class="alert alert-warning">
+                <i class="fas fa-shield-alt me-2"></i>
+                <strong>Mitigation:</strong> ${getMitigationAdvice(toolCategory)}
+            </div>
+        </div>
+    `;
+    
+    modal.show();
+}
+
+function showToolReferences(toolId) {
+    const modal = new bootstrap.Modal(document.getElementById('toolReferencesModal'));
+    const content = document.getElementById('toolReferencesContent');
+    
+    // Mock references - in real implementation, this would come from the tool data
+    content.innerHTML = `
+        <div class="references-list">
+            <div class="mb-3">
+                <h6><i class="fas fa-external-link-alt me-2"></i>External Resources</h6>
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <a href="#" target="_blank" class="text-decoration-none">
+                            <i class="fas fa-link me-2"></i>Official Documentation
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="#" target="_blank" class="text-decoration-none">
+                            <i class="fas fa-book me-2"></i>Security Analysis Report
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="#" target="_blank" class="text-decoration-none">
+                            <i class="fas fa-shield-alt me-2"></i>MITRE ATT&CK Entry
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    `;
+    
+    modal.show();
+}
+
+function getDetectionAdvice(category) {
+    const advice = {
+        'Malware': 'Monitor for unusual process execution, network connections, and file system changes. Use endpoint detection and response (EDR) solutions.',
+        'Command and Control': 'Monitor network traffic for suspicious outbound connections, DNS queries, and communication patterns.',
+        'Credential Access': 'Monitor for LSASS access, credential dumping activities, and unusual authentication patterns.',
+        'Network': 'Monitor network traffic patterns, port scans, and lateral movement indicators.',
+        'Dual-use Tool': 'Monitor for unauthorized use of legitimate tools and unusual command-line arguments.',
+        'Default': 'Implement comprehensive logging and monitoring. Use behavioral analysis to detect anomalous activities.'
+    };
+    
+    return advice[category] || advice['Default'];
+}
+
+function getMitigationAdvice(category) {
+    const advice = {
+        'Malware': 'Use application whitelisting, endpoint protection, and regular system updates. Implement network segmentation.',
+        'Command and Control': 'Block known C2 domains, implement network monitoring, and use DNS filtering.',
+        'Credential Access': 'Implement multi-factor authentication, credential guard, and principle of least privilege.',
+        'Network': 'Use network segmentation, monitor east-west traffic, and implement zero-trust architecture.',
+        'Dual-use Tool': 'Implement application control policies and monitor for unauthorized tool usage.',
+        'Default': 'Follow security best practices including regular updates, access controls, and security awareness training.'
+    };
+    
+    return advice[category] || advice['Default'];
+}
+
+// Make functions globally available
+window.clearToolFilters = clearToolFilters;
+window.showToolDetails = showToolDetails;
+window.showToolReferences = showToolReferences;
+</script>
+{% endblock %}

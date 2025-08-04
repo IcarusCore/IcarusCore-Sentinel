@@ -1,19 +1,417 @@
-<head>
-    <title>{{ title }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+{% extends "base.html" %}
 
-<body>
-    <div class="App">
-        <header class="App-header">
-            <img src="{{ url_for('static', filename='Octocat.png') }}" class="App-logo" alt="logo" />
-            <p>
-                GitHub Codespaces <span class="heart">♥️</span> Flask
-            </p>
-            <p class="small">
-                Edit <code>templates/index.html</code> and refresh to see your changes!
-            </p>
-        </header>
+{% block title %}Dashboard - Threat Intel Hub{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 4rem 0;
+        margin-bottom: 2rem;
+        border-radius: 15px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+        animation: backgroundMove 20s linear infinite;
+    }
+    
+    @keyframes backgroundMove {
+        0% { transform: translateX(0) translateY(0); }
+        100% { transform: translateX(-10px) translateY(-10px); }
+    }
+    
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .activity-item {
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+    }
+    
+    .activity-item:hover {
+        transform: translateX(3px);
+        border-left-color: var(--primary-color);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="hero-content">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1 class="display-4 fw-bold mb-3">
+                        <i class="fas fa-shield-alt me-3"></i>
+                        Threat Intelligence Dashboard
+                    </h1>
+                    <p class="lead mb-4">
+                        Stay ahead of cyber threats with real-time intelligence from MITRE ATT&CK, CISA, and leading security sources.
+                    </p>
+                    <div class="d-flex gap-3 flex-wrap">
+                        <a href="{{ url_for('ttps') }}" class="btn btn-light btn-lg">
+                            <i class="fas fa-crosshairs me-2"></i>Explore TTPs
+                        </a>
+                        <button class="btn btn-outline-light btn-lg" onclick="refreshData()">
+                            <i class="fas fa-sync-alt me-2"></i>Refresh Data
+                        </button>
+                    </div>
+                </div>
+                <div class="col-lg-4 text-center">
+                    <div class="hero-stats">
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <div class="h2 fw-bold" data-stat="total_threats">{{ stats.total_threats or 0 }}</div>
+                                <small class="text-light">Active Threats</small>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="h2 fw-bold" data-stat="total_actors">{{ stats.total_actors or 0 }}</div>
+                                <small class="text-light">Threat Actors</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-</body>
+</div>
 
-</html>
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card stat-card stat-threats h-100" style="cursor: pointer;" onclick="window.location.href='{{ url_for('ttps') }}'">
+            <div class="card-body text-center">
+                <i class="fas fa-exclamation-triangle stat-icon text-danger mb-3"></i>
+                <div class="stat-number text-danger" data-stat="total_threats">{{ stats.total_threats or 0 }}</div>
+                <div class="stat-label">Total Threats</div>
+                <small class="text-muted mt-2 d-block">Active TTPs & Vulnerabilities</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card stat-card stat-actors h-100" style="cursor: pointer;" onclick="window.location.href='{{ url_for('actors') }}'">
+            <div class="card-body text-center">
+                <i class="fas fa-user-secret stat-icon text-purple mb-3"></i>
+                <div class="stat-number text-purple" data-stat="total_actors">{{ stats.total_actors or 0 }}</div>
+                <div class="stat-label">Threat Actors</div>
+                <small class="text-muted mt-2 d-block">Known Adversary Groups</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card stat-card stat-tools h-100" style="cursor: pointer;" onclick="window.location.href='{{ url_for('tools') }}'">
+            <div class="card-body text-center">
+                <i class="fas fa-tools stat-icon text-success mb-3"></i>
+                <div class="stat-number text-success" data-stat="total_tools">{{ stats.total_tools or 0 }}</div>
+                <div class="stat-label">Security Tools</div>
+                <small class="text-muted mt-2 d-block">Techniques & Utilities</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card stat-card stat-updated h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-clock stat-icon text-info mb-3"></i>
+                <div class="stat-number text-info">
+                    <small>{{ stats.last_updated|format_date if stats.last_updated else 'Never' }}</small>
+                </div>
+                <div class="stat-label">Last Updated</div>
+                <small class="text-muted mt-2 d-block">Data Refresh Status</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content Row -->
+<div class="row">
+    <!-- Recent Threats -->
+    <div class="col-lg-8 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-bolt text-warning me-2"></i>
+                    Recent Threat Intelligence
+                </h5>
+                <a href="{{ url_for('ttps') }}" class="btn btn-sm btn-outline-primary">
+                    View All <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+            <div class="card-body">
+                {% if recent_threats %}
+                    <div class="threat-timeline">
+                        {% for threat in recent_threats %}
+                        <div class="activity-item threat-item p-3 mb-3 border rounded" 
+                             data-severity="{{ threat.severity|lower }}"
+                             data-source="{{ threat.source }}"
+                             data-date="{{ threat.date }}">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="threat-title mb-1">{{ threat.name|truncate_text(80) }}</h6>
+                                <div class="threat-badges">
+                                    <span class="badge severity-{{ threat.severity|lower }}">{{ threat.severity }}</span>
+                                    <span class="badge bg-secondary">{{ threat.source }}</span>
+                                </div>
+                            </div>
+                            
+                            <p class="threat-description text-muted small mb-2">
+                                {{ threat.description|truncate_text(120) }}
+                            </p>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="threat-meta">
+                                    {% if threat.tactic %}
+                                    <small class="text-muted">
+                                        <i class="fas fa-crosshairs me-1"></i>{{ threat.tactic }}
+                                    </small>
+                                    {% endif %}
+                                </div>
+                                <small class="text-muted">{{ threat.date|format_date }}</small>
+                            </div>
+                            
+                            {% if threat.tags %}
+                            <div class="threat-tags mt-2">
+                                {% for tag in threat.tags[:4] %}
+                                <span class="badge bg-light text-dark me-1">{{ tag }}</span>
+                                {% endfor %}
+                                {% if threat.tags|length > 4 %}
+                                <span class="badge bg-light text-dark">+{{ threat.tags|length - 4 }} more</span>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="fas fa-database fa-3x mb-3 opacity-50"></i>
+                        <h5>No Recent Threats</h5>
+                        <p>Threat intelligence data will appear here once loaded.</p>
+                        <button class="btn btn-primary" onclick="refreshData()">
+                            <i class="fas fa-sync-alt me-2"></i>Load Data
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Quick Actions -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-bolt text-primary me-2"></i>
+                    Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('ttps') }}?severity=Critical" class="btn btn-outline-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Critical Threats
+                    </a>
+                    <a href="{{ url_for('ttps') }}?tactic=initial-access" class="btn btn-outline-warning">
+                        <i class="fas fa-door-open me-2"></i>
+                        Initial Access
+                    </a>
+                    <a href="{{ url_for('actors') }}" class="btn btn-outline-info">
+                        <i class="fas fa-user-secret me-2"></i>
+                        APT Groups
+                    </a>
+                    <a href="{{ url_for('tools') }}" class="btn btn-outline-success">
+                        <i class="fas fa-tools me-2"></i>
+                        Attack Tools
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Top Threat Actors -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-users text-danger me-2"></i>
+                    Top Threat Actors
+                </h5>
+                <a href="{{ url_for('actors') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if actors %}
+                    {% for actor in actors %}
+                    <div class="d-flex align-items-center mb-3 p-2 rounded bg-light">
+                        <div class="avatar-sm bg-danger text-white rounded-circle d-flex align-items-center justify-content-center me-3">
+                            <i class="fas fa-user-ninja"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">{{ actor.name }}</h6>
+                            <small class="text-muted">{{ actor.country or 'Unknown' }}</small>
+                            {% if actor.targets %}
+                            <div class="mt-1">
+                                {% for target in actor.targets[:2] %}
+                                <span class="badge bg-secondary me-1">{{ target }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-3 text-muted">
+                        <i class="fas fa-user-secret fa-2x mb-2 opacity-50"></i>
+                        <p class="mb-0">No threat actors loaded</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Common Tools -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-wrench text-warning me-2"></i>
+                    Common Attack Tools
+                </h5>
+                <a href="{{ url_for('tools') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if tools %}
+                    {% for tool in tools %}
+                    <div class="d-flex align-items-center mb-3 p-2 rounded bg-light">
+                        <div class="avatar-sm bg-warning text-white rounded-circle d-flex align-items-center justify-content-center me-3">
+                            <i class="fas fa-cog"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">{{ tool.name }}</h6>
+                            <small class="text-muted">{{ tool.category }}</small>
+                            {% if tool.platforms %}
+                            <div class="mt-1">
+                                {% for platform in tool.platforms[:2] %}
+                                <span class="badge bg-info me-1">{{ platform }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-3 text-muted">
+                        <i class="fas fa-tools fa-2x mb-2 opacity-50"></i>
+                        <p class="mb-0">No tools loaded</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Data Sources Info -->
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3 mb-3">
+                        <div class="data-source-item">
+                            <div class="source-icon bg-purple text-white rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                <i class="fas fa-crosshairs fa-lg"></i>
+                            </div>
+                            <h6>MITRE ATT&CK</h6>
+                            <small class="text-muted">Tactics, Techniques & Procedures</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="data-source-item">
+                            <div class="source-icon bg-info text-white rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                <i class="fas fa-shield-alt fa-lg"></i>
+                            </div>
+                            <h6>CISA Alerts</h6>
+                            <small class="text-muted">Government Security Advisories</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="data-source-item">
+                            <div class="source-icon bg-success text-white rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                <i class="fas fa-satellite fa-lg"></i>
+                            </div>
+                            <h6>AlienVault OTX</h6>
+                            <small class="text-muted">Open Threat Exchange</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="data-source-item">
+                            <div class="source-icon bg-secondary text-white rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                <i class="fas fa-rss fa-lg"></i>
+                            </div>
+                            <h6>Security News</h6>
+                            <small class="text-muted">RSS Feeds & Publications</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script>
+// Auto-refresh stats every 5 minutes
+setInterval(function() {
+    fetch('/api/stats')
+        .then(response => response.json())
+        .then(data => {
+            // Update stat numbers with animation
+            if (window.Dashboard && window.Dashboard.updateStatsDisplay) {
+                window.Dashboard.updateStatsDisplay();
+            }
+        })
+        .catch(error => console.warn('Error updating stats:', error));
+}, 5 * 60 * 1000);
+
+// Initialize dashboard-specific functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Add click handlers for threat items
+    document.querySelectorAll('.threat-item').forEach(item => {
+        item.addEventListener('click', function() {
+            // Could expand to show more details or navigate to specific threat
+            console.log('Clicked threat:', this.querySelector('.threat-title').textContent);
+        });
+    });
+    
+    // Animate stat cards on scroll
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('fade-in');
+            }
+        });
+    }, observerOptions);
+    
+    document.querySelectorAll('.stat-card').forEach(card => {
+        observer.observe(card);
+    });
+});
+</script>
+{% endblock %}
