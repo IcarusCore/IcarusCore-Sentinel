@@ -157,6 +157,48 @@ class DataProcessor:
         except Exception as e:
             print(f"Error processing OTX data: {e}")
     
+    def process_shodan_data(self, shodan_data):
+        """Process Shodan vulnerability data and update threat files"""
+        try:
+            # Load existing threats
+            existing_threats = self._load_json_file(Config.THREATS_FILE)
+            
+            for vuln in shodan_data:
+                threat = {
+                    'id': vuln.get('id', ''),
+                    'name': vuln.get('name', ''),
+                    'description': vuln.get('description', ''),
+                    'tactic': 'Reconnaissance',
+                    'severity': vuln.get('severity', 'Medium'),
+                    'source': 'Shodan',
+                    'date': vuln.get('date', ''),
+                    'ip_address': vuln.get('ip_address', ''),
+                    'port': vuln.get('port', 0),
+                    'service': vuln.get('service', ''),
+                    'country': vuln.get('country', ''),
+                    'organization': vuln.get('organization', ''),
+                    'vulnerabilities': vuln.get('vulnerabilities', []),
+                    'tags': vuln.get('tags', []) + ['shodan', 'vulnerability'],
+                    'mitigation': 'Patch vulnerable services and restrict network access.',
+                    'detection': 'Monitor for scanning activities and vulnerable service exposure.'
+                }
+                
+                # Check if already exists (avoid duplicates for same IP/port combo)
+                existing_id = f"shodan-{vuln.get('ip_address', '')}-{vuln.get('port', '')}"
+                if not any(t.get('id', '').startswith(existing_id.split('-')[0:3]) for t in existing_threats):
+                    existing_threats.append(threat)
+            
+            # Keep only recent threats (last 2000 to include Shodan data)
+            existing_threats.sort(key=lambda x: x.get('date', ''), reverse=True)
+            existing_threats = existing_threats[:2000]
+            
+            # Save updated data
+            self._save_json_file(Config.THREATS_FILE, existing_threats)
+            print(f"Processed {len(shodan_data)} Shodan vulnerabilities")
+            
+        except Exception as e:
+            print(f"Error processing Shodan data: {e}")
+    
     def _process_mitre_actors(self, mitre_data):
         """Extract and process threat actor information from MITRE data"""
         try:

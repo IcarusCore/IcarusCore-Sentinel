@@ -14,7 +14,7 @@ class Config:
     
     # API Keys (set these as environment variables)
     OTX_API_KEY = os.environ.get('OTX_API_KEY', '')
-    SHODAN_API_KEY = os.environ.get('SHODAN_API_KEY', '')
+    SHODAN_API_KEY = os.environ.get('SHODAN_API_KEY', 'pKNn8sjFVfZjr8tLLv6zVqqeyIMEvdin')
     
     # Data sources URLs
     MITRE_ATTACK_URL = 'https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json'

@@ -334,6 +334,31 @@
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-3">
                         <div class="me-3">
+                            <i class="fas fa-satellite-dish fa-2x text-danger"></i>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-1">Shodan</h5>
+                            <small class="text-muted">Internet-wide Scanning</small>
+                        </div>
+                    </div>
+                    <p class="card-text">
+                        Internet-wide port scanning and banner grabbing service for discovering vulnerable devices and services.
+                    </p>
+                    <ul class="list-unstyled small">
+                        <li><i class="fas fa-check text-success me-2"></i>Vulnerability Detection</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Service Identification</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Geographic Analysis</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Exposed Infrastructure</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card data-source-card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="me-3">
                             <i class="fas fa-rss fa-2x text-secondary"></i>
                         </div>
                         <div>
@@ -448,70 +473,35 @@
                         <li><i class="fas fa-clock text-warning me-2"></i>Interactive dashboards</li>
                     </ul>
                 </div>
-                
-                <div class="timeline-item">
-                    <h5>Phase 4: Enterprise <span class="badge bg-secondary">Planned</span></h5>
-                    <p class="text-muted mb-2">Enterprise-grade features</p>
-                    <ul class="list-unstyled small">
-                        <li><i class="fas fa-clock text-secondary me-2"></i>Multi-user support</li>
-                        <li><i class="fas fa-clock text-secondary me-2"></i>API endpoints</li>
-                        <li><i class="fas fa-clock text-secondary me-2"></i>Custom integrations</li>
-                        <li><i class="fas fa-clock text-secondary me-2"></i>Advanced notifications</li>
-                    </ul>
-                </div>
             </div>
         </div>
         
         <div class="col-lg-6">
-            <h2 class="mb-4">Project Statistics</h2>
-            <div class="github-stats mb-4">
-                <div class="row text-center">
-                    <div class="col-4">
-                        <div class="stats-item">
-                            <div class="stats-number">15+</div>
-                            <small>Python Modules</small>
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="stats-item">
-                            <div class="stats-number">2500+</div>
-                            <small>Lines of Code</small>
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="stats-item">
-                            <div class="stats-number">4</div>
-                            <small>Data Sources</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
+            <h2 class="mb-4">Architecture Overview</h2>
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">
-                        <i class="fas fa-code me-2"></i>Technical Highlights
+                        <i class="fas fa-layer-group me-2"></i>System Architecture
                     </h5>
+                    <p class="text-muted mb-3">
+                        The Threat Intelligence Dashboard follows a modular, scalable architecture designed for reliability and extensibility.
+                    </p>
                     <ul class="list-unstyled">
                         <li class="mb-2">
-                            <i class="fas fa-check text-success me-2"></i>
-                            <strong>Modular Architecture:</strong> Clean separation of concerns with dedicated service modules
+                            <i class="fas fa-server text-primary me-2"></i>
+                            <strong>Backend:</strong> Python Flask application with modular service architecture
                         </li>
                         <li class="mb-2">
-                            <i class="fas fa-check text-success me-2"></i>
-                            <strong>Real-time Updates:</strong> Background scheduling for automatic data refresh
+                            <i class="fas fa-database text-info me-2"></i>
+                            <strong>Data Layer:</strong> JSON-based storage with real-time aggregation
                         </li>
                         <li class="mb-2">
-                            <i class="fas fa-check text-success me-2"></i>
-                            <strong>Responsive Design:</strong> Mobile-first approach with Bootstrap framework
+                            <i class="fas fa-sync-alt text-success me-2"></i>
+                            <strong>Data Sources:</strong> Automated collection from multiple threat intelligence feeds
                         </li>
                         <li class="mb-2">
-                            <i class="fas fa-check text-success me-2"></i>
-                            <strong>Error Handling:</strong> Comprehensive error handling and logging
-                        </li>
-                        <li class="mb-2">
-                            <i class="fas fa-check text-success me-2"></i>
-                            <strong>Extensible:</strong> Easy to add new data sources and features
+                            <i class="fas fa-desktop text-warning me-2"></i>
+                            <strong>Frontend:</strong> Responsive web interface with interactive dashboards
                         </li>
                     </ul>
                 </div>
@@ -551,6 +541,7 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate</code></pre>
                     <div class="mb-4">
                         <h6>4. Configure Environment (Optional)</h6>
                         <pre class="bg-dark text-light p-3 rounded"><code>export OTX_API_KEY="your-otx-api-key"
+export SHODAN_API_KEY="your-shodan-api-key"
 export FLASK_DEBUG=True</code></pre>
                     </div>
                     
@@ -611,7 +602,7 @@ export FLASK_DEBUG=True</code></pre>
                             <code>OTX_API_KEY</code> - AlienVault OTX API access
                         </li>
                         <li class="mb-2">
-                            <code>SHODAN_API_KEY</code> - Shodan API access (future)
+                            <code>SHODAN_API_KEY</code> - Shodan API access
                         </li>
                         <li class="mb-2">
                             <code>REFRESH_INTERVALS</code> - Data update frequencies
@@ -620,62 +611,6 @@ export FLASK_DEBUG=True</code></pre>
                             <code>RSS_FEEDS</code> - Custom RSS feed sources
                         </li>
                     </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Contributing -->
-<section class="mb-5">
-    <div class="row">
-        <div class="col-lg-8 mx-auto">
-            <div class="contact-card text-center">
-                <h2 class="mb-4">Contributing</h2>
-                <p class="lead mb-4">
-                    We welcome contributions from the cybersecurity community!
-                </p>
-                <p class="mb-4">
-                    Whether you're reporting bugs, suggesting features, improving documentation, 
-                    or contributing code, your involvement helps make this platform better for everyone.
-                </p>
-                
-                <div class="row g-4 mt-4">
-                    <div class="col-md-4">
-                        <div class="text-center">
-                            <i class="fas fa-bug fa-2x text-danger mb-3"></i>
-                            <h5>Report Issues</h5>
-                            <p class="small text-muted">Found a bug or have a feature request?</p>
-                            <a href="https://github.com/your-repo/threat-intel-dashboard/issues" 
-                               target="_blank" class="btn btn-outline-primary btn-sm">
-                                Open Issue
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-4">
-                        <div class="text-center">
-                            <i class="fas fa-code-branch fa-2x text-success mb-3"></i>
-                            <h5>Submit PRs</h5>
-                            <p class="small text-muted">Contribute code improvements</p>
-                            <a href="https://github.com/your-repo/threat-intel-dashboard/pulls" 
-                               target="_blank" class="btn btn-outline-success btn-sm">
-                                Create PR
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-4">
-                        <div class="text-center">
-                            <i class="fas fa-book fa-2x text-info mb-3"></i>
-                            <h5>Documentation</h5>
-                            <p class="small text-muted">Help improve documentation</p>
-                            <a href="https://github.com/your-repo/threat-intel-dashboard/wiki" 
-                               target="_blank" class="btn btn-outline-info btn-sm">
-                                View Wiki
-                            </a>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -716,57 +651,6 @@ export FLASK_DEBUG=True</code></pre>
                     <small class="text-muted">
                         Always verify threat intelligence from multiple sources before taking action.
                     </small>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Contact & Support -->
-<section class="mb-5">
-    <div class="row">
-        <div class="col-lg-8 mx-auto">
-            <div class="contact-card text-center">
-                <h2 class="mb-4">Support & Contact</h2>
-                <p class="mb-4">
-                    Need help or have questions? We're here to assist!
-                </p>
-                
-                <div class="row g-4">
-                    <div class="col-md-4">
-                        <div class="text-center">
-                            <i class="fab fa-github fa-2x text-dark mb-3"></i>
-                            <h6>GitHub</h6>
-                            <p class="small text-muted">Issues, discussions, and code</p>
-                            <a href="https://github.com/your-repo/threat-intel-dashboard" 
-                               target="_blank" class="btn btn-outline-dark btn-sm">
-                                Visit Repository
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-4">
-                        <div class="text-center">
-                            <i class="fas fa-envelope fa-2x text-primary mb-3"></i>
-                            <h6>Email</h6>
-                            <p class="small text-muted">Direct support and inquiries</p>
-                            <a href="mailto:support@threatinteldashboard.com" 
-                               class="btn btn-outline-primary btn-sm">
-                                Send Email
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-4">
-                        <div class="text-center">
-                            <i class="fab fa-discord fa-2x text-indigo mb-3"></i>
-                            <h6>Community</h6>
-                            <p class="small text-muted">Join our community chat</p>
-                            <a href="#" class="btn btn-outline-secondary btn-sm">
-                                Join Discord
-                            </a>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -888,25 +772,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     });
-    
-    // Update GitHub stats (mock data)
-    setTimeout(() => {
-        const statsNumbers = document.querySelectorAll('.stats-number');
-        statsNumbers.forEach(stat => {
-            const finalValue = parseInt(stat.textContent);
-            const increment = Math.ceil(finalValue / 50);
-            let currentValue = 0;
-            
-            const timer = setInterval(() => {
-                currentValue += increment;
-                if (currentValue >= finalValue) {
-                    currentValue = finalValue;
-                    clearInterval(timer);
-                }
-                stat.textContent = currentValue + (stat.textContent.includes('+') ? '+' : '');
-            }, 30);
-        });
-    }, 500);
 });
 </script>
 {% endblock %}

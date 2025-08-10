@@ -10,6 +10,7 @@ from src.services.mitre_service import MitreService
 from src.services.otx_service import OTXService
 from src.services.cisa_service import CISAService
 from src.services.rss_service import RSSService
+from src.services.shodan_service import ShodanService
 from src.utils.data_processor import DataProcessor
 from src.utils.helpers import format_date, truncate_text
 from config import Config
@@ -22,6 +23,7 @@ mitre_service = MitreService()
 otx_service = OTXService()
 cisa_service = CISAService()
 rss_service = RSSService()
+shodan_service = ShodanService()
 data_processor = DataProcessor()
 
 # Template filters
@@ -63,53 +65,17 @@ def update_threat_data():
                 data_processor.process_otx_data(otx_data)
                 print("✓ OTX data updated")
         
+        # Update Shodan data (if API key is available)
+        if app.config['SHODAN_API_KEY']:
+            shodan_data = shodan_service.fetch_vulnerabilities()
+            if shodan_data:
+                data_processor.process_shodan_data(shodan_data)
+                print("✓ Shodan data updated")
+        
         print(f"[{datetime.now()}] Threat data update completed")
         
     except Exception as e:
         print(f"Error updating threat data: {e}")
-
-def calculate_actor_statistics(actors):
-    """Calculate statistics for the actors page"""
-    if not actors:
-        return {
-            'total_actors': 0,
-            'apt_groups': 0,
-            'countries': 0,
-            'high_sophistication': 0
-        }
-    
-    # Count APT groups (actors with "APT" in their name or description)
-    apt_count = 0
-    for actor in actors:
-        name = actor.get('name', '').upper()
-        description = actor.get('description', '').upper()
-        aliases = actor.get('aliases', [])
-        alias_text = ' '.join(aliases).upper() if aliases else ''
-        
-        if ('APT' in name or 'APT' in description or 'APT' in alias_text or
-            'ADVANCED PERSISTENT THREAT' in description):
-            apt_count += 1
-    
-    # Count unique countries
-    countries = set()
-    for actor in actors:
-        country = actor.get('country', '')
-        if country and country.strip():
-            countries.add(country.strip())
-    
-    # Count high sophistication actors
-    high_sophistication_count = 0
-    for actor in actors:
-        sophistication = actor.get('sophistication', '').lower()
-        if sophistication == 'high':
-            high_sophistication_count += 1
-    
-    return {
-        'total_actors': len(actors),
-        'apt_groups': apt_count,
-        'countries': len(countries),
-        'high_sophistication': high_sophistication_count
-    }
 
 @app.route('/')
 def index():
@@ -211,13 +177,10 @@ def actors():
             with open(app.config['ACTORS_FILE'], 'r') as f:
                 actors = json.load(f)
         
-        # Calculate actor statistics
-        actor_stats = calculate_actor_statistics(actors)
-        
-        return render_template('actors.html', actors=actors, actor_stats=actor_stats)
+        return render_template('actors.html', actors=actors)
     except Exception as e:
         print(f"Error loading actors: {e}")
-        return render_template('actors.html', actors=[], actor_stats={})
+        return render_template('actors.html', actors=[])
 
 @app.route('/tools')
 def tools():
@@ -233,6 +196,60 @@ def tools():
         print(f"Error loading tools: {e}")
         return render_template('tools.html', tools=[])
 
+@app.route('/shodan')
+def shodan():
+    """Shodan intelligence page"""
+    try:
+        # Check if Shodan API key is configured
+        if not app.config['SHODAN_API_KEY']:
+            return render_template('shodan.html', 
+                                 error="Shodan API key not configured",
+                                 vulnerabilities=[],
+                                 api_info=None)
+        
+        # Load Shodan data from processed threats
+        with open(app.config['THREATS_FILE'], 'r') as f:
+            all_threats = json.load(f)
+        
+        # Filter for Shodan-sourced data
+        shodan_threats = [t for t in all_threats if t.get('source') == 'Shodan']
+        
+        # Get API info
+        api_info = shodan_service.get_api_info()
+        
+        # Group by country for statistics
+        country_stats = {}
+        service_stats = {}
+        
+        for threat in shodan_threats:
+            country = threat.get('country', 'Unknown')
+            service = threat.get('service', 'Unknown')
+            
+            country_stats[country] = country_stats.get(country, 0) + 1
+            service_stats[service] = service_stats.get(service, 0) + 1
+        
+        stats = {
+            'total_vulnerabilities': len(shodan_threats),
+            'unique_countries': len(country_stats),
+            'unique_services': len(service_stats),
+            'top_countries': sorted(country_stats.items(), key=lambda x: x[1], reverse=True)[:5],
+            'top_services': sorted(service_stats.items(), key=lambda x: x[1], reverse=True)[:5]
+        }
+        
+        return render_template('shodan.html', 
+                             vulnerabilities=shodan_threats[:100],  # Limit display
+                             api_info=api_info,
+                             stats=stats,
+                             error=None)
+    
+    except Exception as e:
+        print(f"Error loading Shodan page: {e}")
+        return render_template('shodan.html', 
+                             vulnerabilities=[],
+                             api_info=None,
+                             stats={},
+                             error=str(e))
+
 @app.route('/about')
 def about():
     """About page"""
@@ -246,6 +263,39 @@ def api_refresh():
         return jsonify({'status': 'success', 'message': 'Data refreshed successfully'})
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/shodan/refresh')
+def api_shodan_refresh():
+    """API endpoint to manually refresh Shodan data"""
+    try:
+        if not app.config['SHODAN_API_KEY']:
+            return jsonify({'status': 'error', 'message': 'Shodan API key not configured'}), 400
+        
+        shodan_data = shodan_service.fetch_vulnerabilities()
+        if shodan_data:
+            data_processor.process_shodan_data(shodan_data)
+            return jsonify({'status': 'success', 'message': f'Refreshed {len(shodan_data)} Shodan entries'})
+        else:
+            return jsonify({'status': 'error', 'message': 'Failed to fetch Shodan data'}), 500
+    
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/shodan/host/<ip>')
+def api_shodan_host(ip):
+    """API endpoint to get detailed host information"""
+    try:
+        if not app.config['SHODAN_API_KEY']:
+            return jsonify({'error': 'Shodan API key not configured'}), 400
+        
+        host_info = shodan_service.fetch_host_info(ip)
+        if host_info:
+            return jsonify(host_info)
+        else:
+            return jsonify({'error': 'Host not found or API error'}), 404
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/stats')
 def api_stats():
