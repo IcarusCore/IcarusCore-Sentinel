@@ -1,4 +1,4 @@
-/* Main CSS for Threat Intel Dashboard */
+/* Main CSS for Threat Intel Dashboard - Fixed Color Scheme */
 
 /* Global Styles */
 :root {
@@ -11,20 +11,26 @@
     --dark-color: #212529;
     --light-color: #f8f9fa;
     
-    /* Threat severity colors */
+    /* Threat severity colors - improved contrast */
     --critical-color: #8b0000;
-    --high-color: #ff4444;
-    --medium-color: #ff8800;
-    --low-color: #4caf50;
-    --unknown-color: #9e9e9e;
+    --high-color: #dc3545;
+    --medium-color: #fd7e14;
+    --low-color: #198754;
+    --unknown-color: #6c757d;
     
-    /* Custom colors */
-    --cyber-blue: #00d4ff;
-    --cyber-green: #00ff88;
-    --cyber-purple: #8b5cf6;
+    /* Custom colors - improved contrast */
+    --cyber-blue: #0066cc;
+    --cyber-green: #00cc66;
+    --cyber-purple: #7c3aed;
     --dark-bg: #1a1a1a;
     --card-bg: #ffffff;
     --border-color: #dee2e6;
+    
+    /* Text colors for better readability */
+    --text-on-dark: #ffffff;
+    --text-on-light: #212529;
+    --text-muted: #6c757d;
+    --text-muted-dark: #adb5bd;
 }
 
 /* Dark theme support */
@@ -33,6 +39,7 @@
         --card-bg: #2d3748;
         --dark-bg: #1a202c;
         --border-color: #4a5568;
+        --text-muted: #a0aec0;
     }
 }
 
@@ -41,6 +48,7 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: var(--light-color);
     line-height: 1.6;
+    color: var(--text-on-light);
 }
 
 .main-content {
@@ -48,15 +56,17 @@ body {
     min-height: calc(100vh - 200px);
 }
 
-/* Navigation */
+/* Navigation - improved readability */
 .navbar-brand {
     font-weight: 700;
     font-size: 1.5rem;
+    color: var(--text-on-dark) !important;
 }
 
 .navbar-nav .nav-link {
     font-weight: 500;
     transition: color 0.3s ease;
+    color: rgba(255, 255, 255, 0.9) !important;
 }
 
 .navbar-nav .nav-link:hover {
@@ -81,9 +91,10 @@ body {
     background-color: transparent;
     border-bottom: 1px solid var(--border-color);
     font-weight: 600;
+    color: var(--text-on-light);
 }
 
-/* Buttons */
+/* Buttons - improved contrast */
 .btn {
     border-radius: 8px;
     font-weight: 500;
@@ -91,13 +102,16 @@ body {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, var(--primary-color) 0%, #0056b3 100%);
-    border: none;
+    background: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    color: white;
 }
 
 .btn-primary:hover {
-    background: linear-gradient(135deg, #0056b3 0%, var(--primary-color) 100%);
+    background: #0a58ca;
+    border-color: #0a58ca;
     transform: translateY(-1px);
+    color: white;
 }
 
 .btn-outline-primary {
@@ -108,93 +122,154 @@ body {
 .btn-outline-primary:hover {
     background-color: var(--primary-color);
     border-color: var(--primary-color);
+    color: white;
 }
 
-/* Severity badges */
-.severity-critical {
+/* Severity badges - improved contrast and readability */
+.severity-critical,
+.badge.severity-critical {
     background-color: var(--critical-color) !important;
     color: white !important;
+    border: 1px solid rgba(255,255,255,0.2);
 }
 
-.severity-high {
+.severity-high,
+.badge.severity-high {
     background-color: var(--high-color) !important;
     color: white !important;
+    border: 1px solid rgba(255,255,255,0.2);
 }
 
-.severity-medium {
+.severity-medium,
+.badge.severity-medium {
     background-color: var(--medium-color) !important;
     color: white !important;
+    border: 1px solid rgba(255,255,255,0.2);
 }
 
-.severity-low {
+.severity-low,
+.badge.severity-low {
     background-color: var(--low-color) !important;
     color: white !important;
+    border: 1px solid rgba(255,255,255,0.2);
 }
 
-.severity-unknown {
+.severity-unknown,
+.badge.severity-unknown {
     background-color: var(--unknown-color) !important;
     color: white !important;
+    border: 1px solid rgba(255,255,255,0.2);
 }
 
-/* Source badges */
-.source-mitre {
+/* Source badges - improved contrast */
+.source-mitre,
+.badge.source-mitre {
+    background-color: var(--cyber-purple) !important;
+    color: white !important;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.source-cisa,
+.badge.source-cisa {
+    background-color: var(--info-color) !important;
+    color: var(--dark-color) !important;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.source-otx,
+.badge.source-otx {
+    background-color: var(--cyber-green) !important;
+    color: white !important;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.source-rss,
+.badge.source-rss {
+    background-color: var(--secondary-color) !important;
+    color: white !important;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+/* Text color utilities */
+.text-purple {
+    color: var(--cyber-purple) !important;
+}
+
+.bg-purple {
     background-color: var(--cyber-purple) !important;
     color: white !important;
 }
 
-.source-cisa {
-    background-color: var(--info-color) !important;
-    color: white !important;
-}
-
-.source-otx {
-    background-color: var(--cyber-green) !important;
-    color: var(--dark-color) !important;
-}
-
-.source-rss {
-    background-color: var(--secondary-color) !important;
-    color: white !important;
-}
-
-/* Alert styles */
+/* Alert styles - improved readability */
 .alert {
     border-radius: 10px;
     border: none;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.alert-dismissible .btn-close {
-    padding: 1rem 1rem;
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border-left: 4px solid var(--danger-color);
 }
 
-/* Forms */
+.alert-warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border-left: 4px solid var(--warning-color);
+}
+
+.alert-info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border-left: 4px solid var(--info-color);
+}
+
+.alert-success {
+    background-color: #d1e7dd;
+    color: #0f5132;
+    border-left: 4px solid var(--success-color);
+}
+
+/* Forms - improved readability */
 .form-control {
     border-radius: 8px;
     border: 1px solid var(--border-color);
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    background-color: white;
+    color: var(--text-on-light);
 }
 
 .form-control:focus {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    background-color: white;
+    color: var(--text-on-light);
 }
 
 .form-select {
     border-radius: 8px;
     border: 1px solid var(--border-color);
+    background-color: white;
+    color: var(--text-on-light);
 }
 
-/* Search and filter bar */
+.form-label {
+    color: var(--text-on-light);
+    font-weight: 500;
+}
+
+/* Search and filter bar - improved contrast */
 .search-filter-bar {
-    background-color: var(--card-bg);
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
     border-radius: 12px;
     padding: 1.5rem;
     margin-bottom: 2rem;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 1px solid var(--border-color);
 }
 
-/* Pagination */
+/* Pagination - improved readability */
 .pagination {
     margin-top: 2rem;
 }
@@ -204,6 +279,7 @@ body {
     margin: 0 2px;
     border: 1px solid var(--border-color);
     color: var(--primary-color);
+    background-color: white;
     transition: all 0.3s ease;
 }
 
@@ -216,13 +292,15 @@ body {
 .page-item.active .page-link {
     background-color: var(--primary-color);
     border-color: var(--primary-color);
+    color: white;
 }
 
-/* Tables */
+/* Tables - improved readability */
 .table {
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background-color: white;
 }
 
 .table thead th {
@@ -237,20 +315,23 @@ body {
     padding: 1rem;
     border-color: var(--border-color);
     vertical-align: middle;
+    background-color: white;
+    color: var(--text-on-light);
 }
 
 .table-hover tbody tr:hover {
     background-color: rgba(13, 110, 253, 0.05);
 }
 
-/* Stats cards */
+/* Stats cards - improved contrast */
 .stats-card {
     text-align: center;
     padding: 2rem 1rem;
     border-radius: 12px;
-    background: linear-gradient(135deg, var(--primary-color) 0%, #0056b3 100%);
+    background: linear-gradient(135deg, var(--primary-color) 0%, #0a58ca 100%);
     color: white;
     transition: transform 0.3s ease;
+    border: 1px solid rgba(255,255,255,0.1);
 }
 
 .stats-card:hover {
@@ -261,6 +342,7 @@ body {
     font-size: 2.5rem;
     font-weight: 700;
     margin-bottom: 0.5rem;
+    color: white;
 }
 
 .stats-label {
@@ -268,9 +350,10 @@ body {
     opacity: 0.9;
     text-transform: uppercase;
     letter-spacing: 1px;
+    color: white;
 }
 
-/* Threat cards */
+/* Threat cards - improved readability */
 .threat-card {
     margin-bottom: 1rem;
     transition: all 0.3s ease;
@@ -284,11 +367,11 @@ body {
     font-size: 1.1rem;
     font-weight: 600;
     margin-bottom: 0.75rem;
-    color: var(--dark-color);
+    color: var(--text-on-light);
 }
 
 .threat-description {
-    color: var(--secondary-color);
+    color: var(--text-muted);
     margin-bottom: 1rem;
     font-size: 0.95rem;
     line-height: 1.5;
@@ -374,7 +457,7 @@ body {
     }
 }
 
-/* Utility classes */
+/* Utility classes - improved contrast */
 .text-cyber-blue {
     color: var(--cyber-blue) !important;
 }
@@ -389,14 +472,17 @@ body {
 
 .bg-cyber-blue {
     background-color: var(--cyber-blue) !important;
+    color: white !important;
 }
 
 .bg-cyber-green {
     background-color: var(--cyber-green) !important;
+    color: white !important;
 }
 
 .bg-cyber-purple {
     background-color: var(--cyber-purple) !important;
+    color: white !important;
 }
 
 /* Animation classes */
@@ -435,4 +521,74 @@ body {
     .btn {
         border: 2px solid currentColor;
     }
+    
+    .badge {
+        border: 1px solid rgba(0,0,0,0.3);
+    }
+}
+
+/* Text readability improvements */
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+small.text-muted {
+    color: var(--text-muted) !important;
+}
+
+/* Background improvements for readability */
+.bg-light {
+    background-color: #f8f9fa !important;
+    color: var(--text-on-light) !important;
+}
+
+.bg-dark {
+    background-color: var(--dark-color) !important;
+    color: var(--text-on-dark) !important;
+}
+
+/* Badge improvements */
+.badge {
+    font-weight: 500;
+    padding: 0.35em 0.65em;
+    border-radius: 0.375rem;
+}
+
+.badge.bg-light {
+    color: var(--text-on-light) !important;
+    border: 1px solid var(--border-color);
+}
+
+.badge.bg-secondary {
+    background-color: var(--secondary-color) !important;
+    color: white !important;
+}
+
+.badge.bg-info {
+    background-color: var(--info-color) !important;
+    color: var(--dark-color) !important;
+}
+
+.badge.bg-warning {
+    background-color: var(--warning-color) !important;
+    color: var(--dark-color) !important;
+}
+
+/* Source badges with better contrast */
+.badge.source-mitre-att-ck,
+.badge.source-mitre-attack {
+    background-color: var(--cyber-purple) !important;
+    color: white !important;
+}
+
+.badge.source-alienvault-otx {
+    background-color: var(--cyber-green) !important;
+    color: white !important;
+}
+
+.badge.source-bleepingcomputer,
+.badge.source-krebs-on-security,
+.badge.source-the-hacker-news {
+    background-color: var(--secondary-color) !important;
+    color: white !important;
 }

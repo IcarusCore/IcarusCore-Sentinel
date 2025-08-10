@@ -68,6 +68,49 @@ def update_threat_data():
     except Exception as e:
         print(f"Error updating threat data: {e}")
 
+def calculate_actor_statistics(actors):
+    """Calculate statistics for the actors page"""
+    if not actors:
+        return {
+            'total_actors': 0,
+            'apt_groups': 0,
+            'countries': 0,
+            'high_sophistication': 0
+        }
+    
+    # Count APT groups (actors with "APT" in their name or description)
+    apt_count = 0
+    for actor in actors:
+        name = actor.get('name', '').upper()
+        description = actor.get('description', '').upper()
+        aliases = actor.get('aliases', [])
+        alias_text = ' '.join(aliases).upper() if aliases else ''
+        
+        if ('APT' in name or 'APT' in description or 'APT' in alias_text or
+            'ADVANCED PERSISTENT THREAT' in description):
+            apt_count += 1
+    
+    # Count unique countries
+    countries = set()
+    for actor in actors:
+        country = actor.get('country', '')
+        if country and country.strip():
+            countries.add(country.strip())
+    
+    # Count high sophistication actors
+    high_sophistication_count = 0
+    for actor in actors:
+        sophistication = actor.get('sophistication', '').lower()
+        if sophistication == 'high':
+            high_sophistication_count += 1
+    
+    return {
+        'total_actors': len(actors),
+        'apt_groups': apt_count,
+        'countries': len(countries),
+        'high_sophistication': high_sophistication_count
+    }
+
 @app.route('/')
 def index():
     """Homepage with dashboard overview"""
@@ -168,10 +211,13 @@ def actors():
             with open(app.config['ACTORS_FILE'], 'r') as f:
                 actors = json.load(f)
         
-        return render_template('actors.html', actors=actors)
+        # Calculate actor statistics
+        actor_stats = calculate_actor_statistics(actors)
+        
+        return render_template('actors.html', actors=actors, actor_stats=actor_stats)
     except Exception as e:
         print(f"Error loading actors: {e}")
-        return render_template('actors.html', actors=[])
+        return render_template('actors.html', actors=[], actor_stats={})
 
 @app.route('/tools')
 def tools():

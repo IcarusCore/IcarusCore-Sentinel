@@ -464,12 +464,49 @@ async function copyToClipboard(text) {
 }
 
 /**
- * Open external link safely
+ * Open external link safely with validation
  */
 function openExternalLink(url) {
-    if (url) {
-        window.open(url, '_blank', 'noopener,noreferrer');
+    if (!url) {
+        console.warn('No URL provided to openExternalLink');
+        return;
     }
+    
+    // Validate URL format
+    try {
+        const urlObj = new URL(url);
+        if (urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:') {
+            console.warn('Invalid URL protocol:', url);
+            return;
+        }
+    } catch (error) {
+        console.warn('Invalid URL format:', url);
+        return;
+    }
+    
+    window.open(url, '_blank', 'noopener,noreferrer');
+}
+
+/**
+ * Open MITRE ATT&CK technique link with correct formatting
+ */
+function openMitreLink(techniqueId) {
+    if (!techniqueId || !techniqueId.startsWith('T')) {
+        console.warn('Invalid MITRE technique ID:', techniqueId);
+        return;
+    }
+    
+    let url;
+    if (techniqueId.includes('.')) {
+        // Sub-technique: T1546.012 -> T1546/012
+        const [main, sub] = techniqueId.split('.');
+        url = `https://attack.mitre.org/techniques/${main}/${sub}/`;
+    } else {
+        // Main technique: T1546 -> T1546
+        url = `https://attack.mitre.org/techniques/${techniqueId}/`;
+    }
+    
+    openExternalLink(url);
 }
 
 /**
@@ -510,6 +547,7 @@ window.ThreatDashboard = {
     truncateText,
     copyToClipboard,
     openExternalLink,
+    openMitreLink,
     scrollToTop,
     setAutoRefresh
 };

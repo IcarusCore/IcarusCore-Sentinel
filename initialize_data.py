@@ -116,7 +116,8 @@ def initialize_data():
             "detection": "Monitor PowerShell execution and command-line arguments",
             "mitigation": "Enable PowerShell logging and restrict execution policies",
             "is_legitimate": True,
-            "availability": "Built-in"
+            "availability": "Built-in",
+            "risk_level": "High"
         },
         {
             "id": "mimikatz",
@@ -129,7 +130,8 @@ def initialize_data():
             "detection": "Monitor for LSASS access and credential dumping activities",
             "mitigation": "Implement credential guard and limit admin privileges",
             "is_legitimate": True,
-            "availability": "Free"
+            "availability": "Free",
+            "risk_level": "Critical"
         },
         {
             "id": "cobalt-strike",
@@ -142,7 +144,22 @@ def initialize_data():
             "detection": "Monitor for beacon communications and process injection",
             "mitigation": "Block known C2 domains and monitor network traffic",
             "is_legitimate": True,
-            "availability": "Commercial"
+            "availability": "Commercial",
+            "risk_level": "High"
+        },
+        {
+            "id": "nmap",
+            "name": "Nmap",
+            "description": "Network discovery and security auditing tool",
+            "category": "Network",
+            "platforms": ["Windows", "Linux", "macOS"],
+            "used_by": ["Security professionals", "Threat actors"],
+            "techniques": ["T1046"],
+            "detection": "Monitor for network scanning activities",
+            "mitigation": "Implement network monitoring and intrusion detection",
+            "is_legitimate": True,
+            "availability": "Free",
+            "risk_level": "Medium"
         }
     ]
     

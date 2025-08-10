@@ -221,7 +221,7 @@
         <div class="col-lg-6 col-xl-4 mb-4 tool-item" 
              data-category="{{ tool.category }}"
              data-platforms="{{ tool.platforms|join(',') }}"
-             data-risk="Medium"
+             data-risk="{{ tool.get('risk_level', 'Medium') }}"
              data-name="{{ tool.name|lower }}"
              data-description="{{ tool.description|lower }}">
             <div class="card tool-card h-100 risk-level-{{ (tool.get_risk_level() if tool.get_risk_level else 'Low')|lower }}">
@@ -312,9 +312,10 @@
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <div class="risk-indicator">
                                 <small class="text-muted">Risk Level:</small>
+                                {% set risk_level = tool.get('risk_level', 'Medium') %}
                                 <span class="badge 
-                                    {% set risk_level = 'Medium' %}
-                                    {% if risk_level == 'High' %}bg-danger
+                                    {% if risk_level == 'Critical' %}bg-danger
+                                    {% elif risk_level == 'High' %}bg-danger
                                     {% elif risk_level == 'Medium' %}bg-warning
                                     {% else %}bg-success{% endif %}">
                                     {{ risk_level }}
