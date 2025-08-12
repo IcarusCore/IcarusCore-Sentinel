@@ -13,7 +13,7 @@ class Config:
     RSS_REFRESH_INTERVAL = 2     # Every 2 hours
     
     # API Keys (set these as environment variables)
-    OTX_API_KEY = os.environ.get('OTX_API_KEY', '')
+    OTX_API_KEY = os.environ.get('OTX_API_KEY', '13d9e3408f6bcb8dc5472fae604bcfa6366c228ceaf794eb82a3d4c52d0298ea')
     SHODAN_API_KEY = os.environ.get('SHODAN_API_KEY', 'pKNn8sjFVfZjr8tLLv6zVqqeyIMEvdin')
     
     # Data sources URLs

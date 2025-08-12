@@ -65,6 +65,7 @@ class ShodanService:
             print(f"Error processing Shodan data: {e}")
             return None
     
+    
     def fetch_host_info(self, ip_address):
         """Fetch detailed information about a specific host"""
         if not self.api_key:

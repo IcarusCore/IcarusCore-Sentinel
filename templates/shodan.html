@@ -188,7 +188,7 @@
         <div class="stat-label">Services</div>
     </div>
     <div class="stat-card">
-        <div class="stat-number">{{ vulnerabilities|selectattr('severity', 'equalto', 'Critical')|list|length }}</div>
+        <div class="stat-number">{{ vulnerabilities|selectattr('severity', 'equalto', 'Critical')|list|length if vulnerabilities else 0 }}</div>
         <div class="stat-label">Critical Issues</div>
     </div>
 </div>
@@ -308,9 +308,12 @@
                         <div class="flex-grow-1">
                             <h6 class="card-title mb-1">{{ vuln.name }}</h6>
                             <div class="ip-address mb-2">{{ vuln.ip_address or 'Unknown IP' }}</div>
+                            {% if vuln.version %}
+                            <small class="text-muted">Version: {{ vuln.version }}</small>
+                            {% endif %}
                         </div>
-                        <span class="badge severity-{{ vuln.severity|lower }}">
-                            {{ vuln.severity }}
+                        <span class="badge severity-{{ vuln.severity|lower if vuln.severity else 'unknown' }}">
+                            {{ vuln.severity or 'Unknown' }}
                         </span>
                     </div>
                     
@@ -322,20 +325,37 @@
                     
                     <!-- Description -->
                     <p class="card-text small text-muted mb-3">
-                        {{ vuln.description|truncate_text(100) }}
+                        {{ (vuln.description|truncate_text(100)) if vuln.description else 'No description available' }}
                     </p>
                     
-                    <!-- Location -->
-                    {% if vuln.country or vuln.organization %}
+                    <!-- Location and Organization -->
+                    {% if vuln.country or vuln.organization or vuln.city %}
                     <div class="mb-2">
                         <small class="text-muted">
                             <i class="fas fa-map-marker-alt me-1"></i>
                             {% if vuln.country %}
                                 <span class="country-flag me-1">{{ vuln.country[:2] if vuln.country != 'Unknown' else '?' }}</span>
                                 {{ vuln.country }}
+                                {% if vuln.city %}, {{ vuln.city }}{% endif %}
                             {% endif %}
                             {% if vuln.organization %}
-                                ({{ vuln.organization|truncate_text(30) }})
+                                <br><strong>Org:</strong> {{ (vuln.organization|truncate_text(30)) if vuln.organization else '' }}
+                            {% endif %}
+                        </small>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Hostnames -->
+                    {% if vuln.hostnames %}
+                    <div class="mb-2">
+                        <small class="text-muted">
+                            <i class="fas fa-globe me-1"></i>
+                            <strong>Hostnames:</strong>
+                            {% for hostname in vuln.hostnames[:2] %}
+                                {{ hostname }}{% if not loop.last %}, {% endif %}
+                            {% endfor %}
+                            {% if vuln.hostnames|length > 2 %}
+                                <span class="badge bg-secondary">+{{ vuln.hostnames|length - 2 }}</span>
                             {% endif %}
                         </small>
                     </div>
@@ -369,11 +389,11 @@
                     <div class="mt-auto">
                         <div class="d-flex justify-content-between align-items-center">
                             <small class="text-muted">
-                                {{ vuln.date|format_date }}
+                                {{ (vuln.date|format_date) if vuln.date else 'Unknown date' }}
                             </small>
                             <div class="btn-group btn-group-sm">
                                 <button class="btn btn-outline-primary" 
-                                        onclick="showHostDetails('{{ vuln.ip_address }}')"
+                                        onclick='showHostDetails({{ vuln.ip_address|tojson|safe }})'
                                         title="Host Details">
                                     <i class="fas fa-info-circle"></i>
                                 </button>
@@ -506,3 +526,269 @@ function applyShodanFilters() {
     const noResultsMessage = document.getElementById('noResultsMessage');
     const container = document.getElementById('vulnerabilitiesContainer');
     let visibleCount = 0;
+
+    vulnerabilityItems.forEach(item => {
+        let shouldShow = true;
+        
+        // Search filter
+        if (shodanFilters.search) {
+            const searchText = (item.dataset.ip + ' ' + item.dataset.service + ' ' + item.dataset.country).toLowerCase();
+            if (!searchText.includes(shodanFilters.search)) {
+                shouldShow = false;
+            }
+        }
+        
+        // Severity filter
+        if (shodanFilters.severity && item.dataset.severity !== shodanFilters.severity) {
+            shouldShow = false;
+        }
+        
+        // Service filter
+        if (shodanFilters.service && item.dataset.service !== shodanFilters.service) {
+            shouldShow = false;
+        }
+        
+        // Country filter
+        if (shodanFilters.country && item.dataset.country !== shodanFilters.country) {
+            shouldShow = false;
+        }
+        
+        // Show/hide item
+        if (shouldShow) {
+            item.style.display = 'block';
+            visibleCount++;
+        } else {
+            item.style.display = 'none';
+        }
+    });
+    
+    // Show/hide no results message
+    if (visibleCount === 0 && vulnerabilityItems.length > 0) {
+        noResultsMessage.style.display = 'block';
+        container.style.display = 'none';
+    } else {
+        noResultsMessage.style.display = 'none';
+        container.style.display = 'flex';
+    }
+}
+
+function clearShodanFilters() {
+    shodanFilters = {
+        search: '',
+        severity: '',
+        service: '',
+        country: ''
+    };
+    
+    // Reset form controls
+    document.getElementById('shodanSearch').value = '';
+    document.getElementById('severityFilter').value = '';
+    document.getElementById('serviceFilter').value = '';
+    document.getElementById('countryFilter').value = '';
+    
+    // Apply filters
+    applyShodanFilters();
+    
+    // Show success message
+    if (window.ThreatDashboard && window.ThreatDashboard.showAlert) {
+        window.ThreatDashboard.showAlert('Filters cleared', 'info', 2000);
+    }
+}
+
+function refreshShodanData() {
+    if (window.refreshData) {
+        window.refreshData();
+    } else {
+        // Fallback refresh
+        window.location.reload();
+    }
+}
+
+function showHostDetails(ipAddress) {
+    if (!ipAddress) {
+        if (window.ThreatDashboard && window.ThreatDashboard.showAlert) {
+            window.ThreatDashboard.showAlert('No IP address available', 'warning');
+        }
+        return;
+    }
+    
+    const modal = new bootstrap.Modal(document.getElementById('hostDetailsModal'));
+    const content = document.getElementById('hostDetailsContent');
+    
+    // Show loading state
+    content.innerHTML = `
+        <div class="text-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading host information for ${ipAddress}...</p>
+        </div>
+    `;
+    
+    modal.show();
+    
+    // Fetch real host information from Shodan API
+    fetch(`/api/shodan/host/${ipAddress}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            content.innerHTML = generateHostDetailsHTML(data, ipAddress);
+        })
+        .catch(error => {
+            console.error('Error fetching host details:', error);
+            content.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Error:</strong> ${error.message}
+                </div>
+                <div class="host-details">
+                    <h4>${ipAddress}</h4>
+                    <p class="text-muted">Unable to fetch detailed information from Shodan.</p>
+                    <div class="mt-3">
+                        <a href="https://www.shodan.io/host/${ipAddress}" target="_blank" class="btn btn-primary">
+                            <i class="fas fa-external-link-alt me-1"></i>View on Shodan
+                        </a>
+                    </div>
+                </div>
+            `;
+        });
+}
+
+function generateHostDetailsHTML(data, ipAddress) {
+    const hostnames = data.hostnames || [];
+    const vulns = data.vulns || [];
+    const ports = data.ports || [];
+    const location = data.location || {};
+    const org = data.org || 'Unknown';
+    const os = data.os || 'Unknown';
+    
+    let servicesHTML = '';
+    if (data.data && Array.isArray(data.data)) {
+        servicesHTML = `
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Port</th>
+                            <th>Service</th>
+                            <th>Product</th>
+                            <th>Version</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.data.slice(0, 10).map(service => `
+                            <tr>
+                                <td><span class="badge bg-info">${service.port || 'N/A'}</span></td>
+                                <td>${service.transport || 'tcp'}</td>
+                                <td>${service.product || 'Unknown'}</td>
+                                <td>${service.version || 'N/A'}</td>
+                            </tr>
+                        `).join('')}
+                        ${data.data.length > 10 ? `
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">
+                                    <small>+ ${data.data.length - 10} more services</small>
+                                </td>
+                            </tr>
+                        ` : ''}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }
+    
+    return `
+        <div class="host-details">
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <h4>${ipAddress}</h4>
+                    ${hostnames.length > 0 ? `<p class="text-muted">Hostnames: ${hostnames.slice(0, 3).join(', ')}${hostnames.length > 3 ? '...' : ''}</p>` : ''}
+                </div>
+                <div class="col-md-4 text-end">
+                    <span class="badge bg-success">Active Host</span>
+                    ${vulns.length > 0 ? `<span class="badge bg-danger ms-1">${vulns.length} CVEs</span>` : ''}
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h6>Network Information</h6>
+                    <ul class="list-unstyled">
+                        <li><strong>IP Address:</strong> ${ipAddress}</li>
+                        <li><strong>Organization:</strong> ${org}</li>
+                        <li><strong>Country:</strong> ${location.country_name || 'Unknown'}</li>
+                        <li><strong>City:</strong> ${location.city || 'Unknown'}</li>
+                        ${os !== 'Unknown' ? `<li><strong>OS:</strong> ${os}</li>` : ''}
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6>Open Ports</h6>
+                    <div class="mb-2">
+                        ${ports.slice(0, 10).map(port => `
+                            <span class="badge bg-info me-1 mb-1">${port}/tcp</span>
+                        `).join('')}
+                        ${ports.length > 10 ? `<span class="badge bg-secondary">+${ports.length - 10}</span>` : ''}
+                    </div>
+                </div>
+            </div>
+            
+            ${vulns.length > 0 ? `
+            <div class="mb-4">
+                <h6>Vulnerabilities (${vulns.length})</h6>
+                <div class="row">
+                    ${vulns.slice(0, 12).map(vuln => `
+                        <div class="col-md-4 mb-2">
+                            <span class="badge bg-danger">${vuln}</span>
+                        </div>
+                    `).join('')}
+                    ${vulns.length > 12 ? `
+                        <div class="col-12">
+                            <small class="text-muted">+ ${vulns.length - 12} more vulnerabilities</small>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+            ` : ''}
+            
+            ${servicesHTML ? `
+            <div class="mb-4">
+                <h6>Services</h6>
+                ${servicesHTML}
+            </div>
+            ` : ''}
+            
+            <div class="d-flex gap-2">
+                <a href="https://www.shodan.io/host/${ipAddress}" target="_blank" class="btn btn-primary">
+                    <i class="fas fa-external-link-alt me-1"></i>View on Shodan
+                </a>
+                ${vulns.length > 0 ? `
+                <button class="btn btn-warning" onclick="copyVulnerabilities('${vulns.join(',')}')">
+                    <i class="fas fa-copy me-1"></i>Copy CVEs
+                </button>
+                ` : ''}
+            </div>
+        </div>
+    `;
+}
+
+function copyVulnerabilities(vulnList) {
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(vulnList.replace(/,/g, '\n')).then(() => {
+            if (window.ThreatDashboard && window.ThreatDashboard.showAlert) {
+                window.ThreatDashboard.showAlert('CVE list copied to clipboard!', 'success', 2000);
+            }
+        });
+    }
+}
+
+// Make functions globally available
+window.refreshShodanData = refreshShodanData;
+window.clearShodanFilters = clearShodanFilters;
+window.showHostDetails = showHostDetails;
+window.copyVulnerabilities = copyVulnerabilities;
+</script>
+{% endblock %}
