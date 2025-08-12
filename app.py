@@ -118,36 +118,82 @@ def ttps():
     page = request.args.get('page', 1, type=int)
     tactic_filter = request.args.get('tactic', '')
     search_query = request.args.get('search', '')
+    severity_filter = request.args.get('severity', '')
+    source_filter = request.args.get('source', '')
     
     try:
+        # Load ALL threats from the JSON file
         with open(app.config['THREATS_FILE'], 'r') as f:
             all_threats = json.load(f)
         
-        # Filter threats
+        print(f"Loaded {len(all_threats)} total threats from JSON file")
+        
+        # Filter threats BEFORE pagination
         filtered_threats = []
         for threat in all_threats:
+            # Tactic filter
             if tactic_filter and threat.get('tactic', '').lower() != tactic_filter.lower():
                 continue
-            if search_query and search_query.lower() not in threat.get('name', '').lower():
+            
+            # Search filter - search across multiple fields
+            if search_query:
+                search_lower = search_query.lower()
+                searchable_text = ' '.join([
+                    str(threat.get('name', '')),
+                    str(threat.get('description', '')),
+                    str(threat.get('id', '')),
+                    ' '.join(str(tag) for tag in threat.get('tags', [])),
+                    str(threat.get('tactic', '')),
+                    str(threat.get('source', '')),
+                    str(threat.get('author', ''))
+                ]).lower()
+                
+                if search_lower not in searchable_text:
+                    continue
+            
+            # Severity filter
+            if severity_filter and threat.get('severity', '') != severity_filter:
                 continue
+            
+            # Source filter
+            if source_filter:
+                threat_source = threat.get('source', '')
+                if source_filter == 'RSS':
+                    # Handle RSS sources specially
+                    rss_sources = ['BleepingComputer', 'Krebs on Security', 'The Hacker News']
+                    if threat_source not in rss_sources:
+                        continue
+                elif threat_source != source_filter:
+                    continue
+            
             filtered_threats.append(threat)
         
-        # Pagination
-        per_page = app.config['ITEMS_PER_PAGE']
+        print(f"After filtering: {len(filtered_threats)} threats match criteria")
+        
+        # Sort filtered results by date (newest first)
+        filtered_threats.sort(key=lambda x: x.get('date', ''), reverse=True)
+        
+        # Calculate pagination on filtered results
+        per_page = app.config.get('ITEMS_PER_PAGE', 20)
+        total_filtered = len(filtered_threats)
         start = (page - 1) * per_page
         end = start + per_page
+        
+        # Get the page of results
         threats = filtered_threats[start:end]
         
-        # Get unique tactics for filter
+        # Get unique tactics for filter dropdown
         tactics = list(set([t.get('tactic', 'Unknown') for t in all_threats if t.get('tactic')]))
         tactics.sort()
         
         pagination = {
             'page': page,
             'per_page': per_page,
-            'total': len(filtered_threats),
-            'pages': (len(filtered_threats) + per_page - 1) // per_page
+            'total': total_filtered,  # Use filtered count, not total
+            'pages': (total_filtered + per_page - 1) // per_page if per_page > 0 else 1
         }
+        
+        print(f"Showing page {page} of {pagination['pages']} (items {start+1}-{min(end, total_filtered)} of {total_filtered})")
         
         return render_template('ttps.html', 
                              threats=threats,
@@ -157,6 +203,8 @@ def ttps():
                              pagination=pagination)
     except Exception as e:
         print(f"Error loading TTPs: {e}")
+        import traceback
+        traceback.print_exc()
         return render_template('ttps.html', threats=[], tactics=[], pagination={})
 
 def calculate_actor_statistics(actors):
@@ -391,6 +439,30 @@ def api_actor_details(actor_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/threat/<threat_id>')
+def api_threat_details(threat_id):
+    """API endpoint to get details for a specific threat"""
+    try:
+        with open(app.config['THREATS_FILE'], 'r') as f:
+            threats = json.load(f)
+        
+        # Try to find by ID first
+        for threat in threats:
+            if str(threat.get('id', '')) == str(threat_id):
+                return jsonify(threat)
+        
+        # If not found by ID and threat_id is numeric, try by index
+        if threat_id.isdigit():
+            index = int(threat_id) - 1  # Convert to 0-based index
+            if 0 <= index < len(threats):
+                return jsonify(threats[index])
+        
+        return jsonify({'error': 'Threat not found'}), 404
+            
+    except Exception as e:
+        print(f"Error getting threat {threat_id}: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/export')
 def api_export():
     """API endpoint to export all data"""
@@ -419,6 +491,70 @@ def api_export():
                 'total_actors': len(actors),
                 'total_tools': len(tools)
             }
+        }
+        
+        return jsonify(export_data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/export/ttps')
+def api_export_ttps():
+    """API endpoint to export TTPs data with current filters"""
+    try:
+        # Get filter parameters
+        search_query = request.args.get('search', '')
+        severity_filter = request.args.get('severity', '')
+        source_filter = request.args.get('source', '')
+        tactic_filter = request.args.get('tactic', '')
+        
+        # Load and filter threats
+        with open(app.config['THREATS_FILE'], 'r') as f:
+            all_threats = json.load(f)
+        
+        filtered_threats = []
+        for threat in all_threats:
+            # Apply same filters as main TTP route
+            if tactic_filter and threat.get('tactic', '').lower() != tactic_filter.lower():
+                continue
+            
+            if search_query:
+                search_lower = search_query.lower()
+                searchable_text = ' '.join([
+                    str(threat.get('name', '')),
+                    str(threat.get('description', '')),
+                    str(threat.get('id', '')),
+                    ' '.join(str(tag) for tag in threat.get('tags', [])),
+                    str(threat.get('tactic', '')),
+                    str(threat.get('source', ''))
+                ]).lower()
+                
+                if search_lower not in searchable_text:
+                    continue
+            
+            if severity_filter and threat.get('severity', '') != severity_filter:
+                continue
+            
+            if source_filter:
+                threat_source = threat.get('source', '')
+                if source_filter == 'RSS':
+                    rss_sources = ['BleepingComputer', 'Krebs on Security', 'The Hacker News']
+                    if threat_source not in rss_sources:
+                        continue
+                elif threat_source != source_filter:
+                    continue
+            
+            filtered_threats.append(threat)
+        
+        export_data = {
+            'export_time': datetime.now().isoformat(),
+            'filters': {
+                'search': search_query,
+                'severity': severity_filter,
+                'source': source_filter,
+                'tactic': tactic_filter
+            },
+            'total_count': len(filtered_threats),
+            'threats': filtered_threats
         }
         
         return jsonify(export_data)
