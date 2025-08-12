@@ -81,374 +81,203 @@
 
 <!-- Filter Bar -->
 <div class="filter-bar p-4 mb-4">
-    <form class="search-form" method="GET">
-        <div class="row g-3 align-items-end">
-            <!-- Search Input -->
-            <div class="col-md-4">
-                <label for="searchInput" class="form-label small text-muted">Search Techniques</label>
-                <div class="input-group">
-                    <span class="input-group-text">
-                        <i class="fas fa-search"></i>
-                    </span>
-                    <input type="text" 
-                           id="searchInput"
-                           name="search" 
-                           class="form-control" 
-                           placeholder="Search by name, description, or technique ID..."
-                           value="{{ search_query or '' }}">
-                </div>
-                <div class="search-suggestions" style="display: none;"></div>
+    <div class="row g-3 align-items-end">
+        <!-- Search Input -->
+        <div class="col-md-4">
+            <label for="searchInput" class="form-label small text-muted">Search Techniques</label>
+            <div class="input-group">
+                <span class="input-group-text">
+                    <i class="fas fa-search"></i>
+                </span>
+                <input type="text" 
+                       id="searchInput"
+                       class="form-control" 
+                       placeholder="Search by name, description, or technique ID..."
+                       value="{{ search_query or '' }}">
             </div>
-            
-            <!-- Severity Filter -->
-            <div class="col-md-2">
-                <label for="severityFilter" class="form-label small text-muted">Severity</label>
-                <select id="severityFilter" name="severity" class="form-select filter-select">
-                    <option value="">All Severities</option>
-                    <option value="Critical" {{ 'selected' if request.args.get('severity') == 'Critical' }}>Critical</option>
-                    <option value="High" {{ 'selected' if request.args.get('severity') == 'High' }}>High</option>
-                    <option value="Medium" {{ 'selected' if request.args.get('severity') == 'Medium' }}>Medium</option>
-                    <option value="Low" {{ 'selected' if request.args.get('severity') == 'Low' }}>Low</option>
-                </select>
-            </div>
-            
-            <!-- Source Filter -->
-            <div class="col-md-2">
-                <label for="sourceFilter" class="form-label small text-muted">Source</label>
-                <select id="sourceFilter" name="source" class="form-select filter-select">
-                    <option value="">All Sources</option>
-                    <option value="MITRE ATT&CK" {{ 'selected' if request.args.get('source') == 'MITRE ATT&CK' }}>MITRE ATT&CK</option>
-                    <option value="CISA" {{ 'selected' if request.args.get('source') == 'CISA' }}>CISA</option>
-                    <option value="AlienVault OTX" {{ 'selected' if request.args.get('source') == 'AlienVault OTX' }}>AlienVault OTX</option>
-                    <option value="RSS" {{ 'selected' if request.args.get('source') and 'RSS' in request.args.get('source') }}>Security News</option>
-                </select>
-            </div>
-            
-            <!-- Tactic Filter -->
-            <div class="col-md-2">
-                <label for="tacticFilter" class="form-label small text-muted">Tactic</label>
-                <select id="tacticFilter" name="tactic" class="form-select filter-select">
-                    <option value="">All Tactics</option>
-                    {% for tactic in tactics %}
-                    <option value="{{ tactic }}" {{ 'selected' if current_tactic == tactic }}>
-                        {{ tactic|title|replace('-', ' ') }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-            
-            <!-- Action Buttons -->
-            <div class="col-md-2">
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-filter me-1"></i>Filter
-                    </button>
-                    <button type="button" class="btn btn-outline-secondary clear-filters" onclick="clearAllFilters()">
-                        <i class="fas fa-times me-1"></i>Clear
-                    </button>
-                </div>
-            </div>
+            <div class="search-suggestions" style="display: none;"></div>
         </div>
-    </form>
-    
-    <!-- Advanced Filters Toggle -->
-    <div class="mt-3">
-        <button class="btn btn-sm btn-outline-primary advanced-filters-toggle" onclick="toggleAdvancedFilters()">
-            <i class="fas fa-chevron-down me-1"></i>Show Advanced Filters
-        </button>
-    </div>
-    
-    <!-- Advanced Filters Panel -->
-    <div class="advanced-filters mt-3" style="display: none;">
-        <div class="border-top pt-3">
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label small text-muted">Date Range</label>
-                    <select name="dateRange" class="form-select form-select-sm">
-                        <option value="">All Time</option>
-                        <option value="today">Today</option>
-                        <option value="week">Last Week</option>
-                        <option value="month">Last Month</option>
-                        <option value="quarter">Last Quarter</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label small text-muted">Sort By</label>
-                    <select name="sortBy" class="form-select form-select-sm">
-                        <option value="date">Date</option>
-                        <option value="name">Name</option>
-                        <option value="severity">Severity</option>
-                        <option value="source">Source</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label small text-muted">Order</label>
-                    <select name="sortOrder" class="form-select form-select-sm">
-                        <option value="desc">Newest First</option>
-                        <option value="asc">Oldest First</option>
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label small text-muted">Quick Filters</label>
-                    <div class="filter-presets"></div>
-                </div>
+        
+        <!-- Severity Filter -->
+        <div class="col-md-2">
+            <label for="severityFilter" class="form-label small text-muted">Severity</label>
+            <select id="severityFilter" class="form-select filter-select">
+                <option value="">All Severities</option>
+                <option value="Critical">Critical</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+            </select>
+        </div>
+        
+        <!-- Source Filter -->
+        <div class="col-md-2">
+            <label for="sourceFilter" class="form-label small text-muted">Source</label>
+            <select id="sourceFilter" class="form-select filter-select">
+                <option value="">All Sources</option>
+                <option value="MITRE ATT&CK">MITRE ATT&CK</option>
+                <option value="CISA">CISA</option>
+                <option value="AlienVault OTX">AlienVault OTX</option>
+                <option value="RSS">Security News</option>
+            </select>
+        </div>
+        
+        <!-- Tactic Filter -->
+        <div class="col-md-2">
+            <label for="tacticFilter" class="form-label small text-muted">Tactic</label>
+            <select id="tacticFilter" class="form-select filter-select">
+                <option value="">All Tactics</option>
+                {% for tactic in tactics %}
+                <option value="{{ tactic }}">
+                    {{ tactic|title|replace('-', ' ') }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="col-md-2">
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-secondary clear-filters" onclick="clearAllFilters()">
+                    <i class="fas fa-times me-1"></i>Clear
+                </button>
             </div>
         </div>
     </div>
+    
+    <!-- Advanced Filters section removed -->
 </div>
 
-<!-- Results Summary -->
-<div class="d-flex justify-content-between align-items-center mb-3">
+<!-- Results Summary - Hidden -->
+<div class="d-flex justify-content-between align-items-center mb-3" style="display: none !important;">
     <div class="results-summary">
         <span class="results-count text-muted">
-            Showing {{ threats|length }} of {{ threats|length }} techniques
+            {% if threats %}
+                Showing {{ threats|length }} techniques
+            {% else %}
+                No techniques found
+            {% endif %}
         </span>
     </div>
-    <div class="view-options">
-        <div class="btn-group btn-group-sm" role="group">
-            <button type="button" class="btn btn-outline-secondary active" id="cardView">
-                <i class="fas fa-th-large"></i>
-            </button>
-            <button type="button" class="btn btn-outline-secondary" id="tableView">
-                <i class="fas fa-list"></i>
-            </button>
-        </div>
+    <div class="pagination-info">
+        <span class="text-muted" id="paginationInfo">Page 1</span>
     </div>
 </div>
 
-<!-- MITRE ATT&CK Tactic Pills -->
-{% if tactics %}
-<div class="tactic-filter-pills mb-4">
-    <div class="d-flex flex-wrap">
-        <a href="{{ url_for('ttps') }}" class="nav-link {{ 'active' if not current_tactic else '' }}">
-            All Tactics
-        </a>
-        {% for tactic in tactics %}
-        <a href="{{ url_for('ttps') }}?tactic={{ tactic }}" 
-           class="nav-link {{ 'active' if current_tactic == tactic else '' }}">
-            {{ tactic|title|replace('-', ' ') }}
-        </a>
-        {% endfor %}
-    </div>
-</div>
-{% endif %}
+<!-- MITRE ATT&CK Tactic Pills - REMOVED SECTION -->
+<!-- The tactic pills section has been removed as requested -->
 
 <!-- Techniques List -->
 <div id="techniquesContainer" class="techniques-list">
     {% if threats %}
-        <div class="row" id="cardViewContainer">
-            {% for threat in threats %}
-            <div class="col-lg-6 col-xl-4 mb-4">
-                <div class="card technique-card h-100 severity-{{ threat.severity|lower }}"
-                     data-severity="{{ threat.severity }}"
-                     data-source="{{ threat.source }}"
-                     data-tactic="{{ threat.tactic }}"
-                     data-date="{{ threat.date }}"
-                     data-id="{{ threat.id }}">
-                    <div class="card-body">
-                        <!-- Header -->
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <div class="flex-grow-1">
-                                {% if threat.id and threat.id.startswith('T') %}
-                                <div class="mitre-id text-primary mb-1" 
-                                     onclick="copyToClipboard('{{ threat.id }}')"
-                                     title="Click to copy technique ID">
-                                    {{ threat.id }}
+        <!-- Table View Only -->
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Technique</th>
+                        <th>Tactic</th>
+                        <th>Severity</th>
+                        <th>Source</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for threat in threats %}
+                    <tr class="technique-row"
+                        data-severity="{{ threat.severity }}"
+                        data-source="{{ threat.source }}"
+                        data-tactic="{{ threat.tactic }}"
+                        data-date="{{ threat.date }}"
+                        data-id="{{ threat.id }}">
+                        <td>
+                            {% if threat.id and threat.id.startswith('T') %}
+                            <code class="mitre-id" onclick="copyToClipboard('{{ threat.id }}')">
+                                {{ threat.id }}
+                            </code>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div>
+                                <strong>{{ threat.name }}</strong>
+                                <br>
+                                <small class="text-muted">{{ threat.description|truncate_text(120) }}</small>
+                                {% if threat.platforms %}
+                                <div class="mt-1">
+                                    {% for platform in threat.platforms[:3] %}
+                                    <span class="badge bg-info me-1">{{ platform }}</span>
+                                    {% endfor %}
+                                    {% if threat.platforms|length > 3 %}
+                                    <span class="badge bg-light text-dark">+{{ threat.platforms|length - 3 }}</span>
+                                    {% endif %}
                                 </div>
                                 {% endif %}
-                                <h6 class="card-title mb-0">{{ threat.name }}</h6>
-                            </div>
-                            <div class="technique-badges">
-                                <span class="badge severity-{{ threat.severity|lower }}">
-                                    {{ threat.severity }}
-                                </span>
-                            </div>
-                        </div>
-                        
-                        <!-- Description -->
-                        <p class="card-text text-muted small mb-3">
-                            {{ threat.description|truncate_text(120) }}
-                        </p>
-                        
-                        <!-- Tactic -->
-                        {% if threat.tactic %}
-                        <div class="mb-2">
-                            <small class="text-muted">
-                                <i class="fas fa-crosshairs me-1"></i>
-                                <strong>Tactic:</strong> {{ threat.tactic|title|replace('-', ' ') }}
-                            </small>
-                        </div>
-                        {% endif %}
-                        
-                        <!-- Platforms -->
-                        {% if threat.platforms %}
-                        <div class="mb-2">
-                            <small class="text-muted">
-                                <i class="fas fa-desktop me-1"></i>
-                                <strong>Platforms:</strong>
-                            </small>
-                            <div class="mt-1">
-                                {% for platform in threat.platforms[:3] %}
-                                <span class="badge bg-info me-1">{{ platform }}</span>
-                                {% endfor %}
-                                {% if threat.platforms|length > 3 %}
-                                <span class="badge bg-light text-dark">+{{ threat.platforms|length - 3 }}</span>
+                                {% if threat.tags %}
+                                <div class="mt-1">
+                                    {% for tag in threat.tags[:4] %}
+                                    <span class="badge bg-light text-dark me-1">{{ tag }}</span>
+                                    {% endfor %}
+                                    {% if threat.tags|length > 4 %}
+                                    <span class="badge bg-secondary">+{{ threat.tags|length - 4 }}</span>
+                                    {% endif %}
+                                </div>
                                 {% endif %}
                             </div>
-                        </div>
-                        {% endif %}
-                        
-                        <!-- Tags -->
-                        {% if threat.tags %}
-                        <div class="mb-3">
-                            <div class="technique-tags">
-                                {% for tag in threat.tags[:4] %}
-                                <span class="badge bg-light text-dark me-1 mb-1">{{ tag }}</span>
-                                {% endfor %}
-                                {% if threat.tags|length > 4 %}
-                                <span class="badge bg-secondary">+{{ threat.tags|length - 4 }}</span>
-                                {% endif %}
-                            </div>
-                        </div>
-                        {% endif %}
-                        
-                        <!-- Footer -->
-                        <div class="mt-auto">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <small class="text-muted">
-                                    <i class="fas fa-calendar me-1"></i>
-                                    {{ threat.date|format_date }}
-                                </small>
-                                <span class="badge source-{{ threat.source|lower|replace(' ', '-') }}">
-                                    {{ threat.source }}
-                                </span>
-                            </div>
-                            
-                            <!-- Action Buttons -->
-                            <div class="mt-2 d-flex gap-1">
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">
+                                {{ threat.tactic|title|replace('-', ' ') if threat.tactic else 'Unknown' }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge severity-{{ threat.severity|lower }}">
+                                {{ threat.severity }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge source-{{ threat.source|lower|replace(' ', '-') }}">
+                                {{ threat.source }}
+                            </span>
+                        </td>
+                        <td>
+                            <small>{{ threat.date|format_date }}</small>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
                                 {% if threat.id and threat.id.startswith('T') %}
-                                <button class="btn btn-sm btn-outline-primary" 
+                                <button class="btn btn-outline-primary" 
                                         onclick="openMitreLink('{{ threat.id }}')"
-                                        title="View on MITRE ATT&CK">
+                                        title="MITRE ATT&CK">
                                     <i class="fas fa-external-link-alt"></i>
                                 </button>
                                 {% endif %}
                                 {% if threat.link %}
-                                <button class="btn btn-sm btn-outline-secondary"
+                                <button class="btn btn-outline-secondary"
                                         onclick="openExternalLink('{{ threat.link }}')"
-                                        title="View Source">
+                                        title="Source">
                                     <i class="fas fa-link"></i>
                                 </button>
                                 {% endif %}
-                                <button class="btn btn-sm btn-outline-info" 
+                                <button class="btn btn-outline-info" 
                                         onclick="showThreatDetails('{{ threat.id or loop.index }}')"
                                         title="View Details">
                                     <i class="fas fa-info-circle"></i>
                                 </button>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        
-        <!-- Table View (Hidden by default) -->
-        <div id="tableViewContainer" style="display: none;">
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead class="table-dark">
-                        <tr>
-                            <th class="sortable-header" data-sort="id">
-                                ID <i class="fas fa-sort ms-1"></i>
-                            </th>
-                            <th class="sortable-header" data-sort="name">
-                                Technique <i class="fas fa-sort ms-1"></i>
-                            </th>
-                            <th class="sortable-header" data-sort="tactic">
-                                Tactic <i class="fas fa-sort ms-1"></i>
-                            </th>
-                            <th class="sortable-header" data-sort="severity">
-                                Severity <i class="fas fa-sort ms-1"></i>
-                            </th>
-                            <th class="sortable-header" data-sort="source">
-                                Source <i class="fas fa-sort ms-1"></i>
-                            </th>
-                            <th class="sortable-header" data-sort="date">
-                                Date <i class="fas fa-sort ms-1"></i>
-                            </th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for threat in threats %}
-                        <tr class="technique-row"
-                            data-severity="{{ threat.severity }}"
-                            data-source="{{ threat.source }}"
-                            data-tactic="{{ threat.tactic }}"
-                            data-date="{{ threat.date }}">
-                            <td>
-                                {% if threat.id and threat.id.startswith('T') %}
-                                <code class="mitre-id" onclick="copyToClipboard('{{ threat.id }}')">
-                                    {{ threat.id }}
-                                </code>
-                                {% else %}
-                                <span class="text-muted">-</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <div>
-                                    <strong>{{ threat.name }}</strong>
-                                    <br>
-                                    <small class="text-muted">{{ threat.description|truncate_text(80) }}</small>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="badge bg-secondary">
-                                    {{ threat.tactic|title|replace('-', ' ') if threat.tactic else 'Unknown' }}
-                                </span>
-                            </td>
-                            <td>
-                                <span class="badge severity-{{ threat.severity|lower }}">
-                                    {{ threat.severity }}
-                                </span>
-                            </td>
-                            <td>
-                                <span class="badge source-{{ threat.source|lower|replace(' ', '-') }}">
-                                    {{ threat.source }}
-                                </span>
-                            </td>
-                            <td>
-                                <small>{{ threat.date|format_date }}</small>
-                            </td>
-                            <td>
-                                <div class="btn-group btn-group-sm">
-                                    {% if threat.id and threat.id.startswith('T') %}
-                                    <button class="btn btn-outline-primary" 
-                                            onclick="openMitreLink('{{ threat.id }}')"
-                                            title="MITRE ATT&CK">
-                                        <i class="fas fa-external-link-alt"></i>
-                                    </button>
-                                    {% endif %}
-                                    {% if threat.link %}
-                                    <button class="btn btn-outline-secondary"
-                                            onclick="openExternalLink('{{ threat.link }}')"
-                                            title="Source">
-                                        <i class="fas fa-link"></i>
-                                    </button>
-                                    {% endif %}
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
         
     {% else %}
         <!-- Empty State -->
-        <div class="text-center py-5">
+        <div class="text-center py-5" id="emptyState" style="display: none;">
             <div class="empty-state">
                 <i class="fas fa-crosshairs fa-4x text-muted mb-4 opacity-50"></i>
                 <h4>No Techniques Found</h4>
@@ -472,6 +301,15 @@
             </div>
         </div>
     {% endif %}
+</div>
+
+<!-- Pagination Controls - Hidden -->
+<div class="d-flex justify-content-center align-items-center mt-4" id="paginationControls" style="display: none !important;">
+    <nav aria-label="Techniques pagination">
+        <ul class="pagination" id="pagination">
+            <!-- Pagination will be generated by JavaScript -->
+        </ul>
+    </nav>
 </div>
 
 <!-- Pagination -->
@@ -555,53 +393,232 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{{ url_for('static', filename='js/filters.js') }}"></script>
 <script>
-// View toggle functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const cardViewBtn = document.getElementById('cardView');
-    const tableViewBtn = document.getElementById('tableView');
-    const cardContainer = document.getElementById('cardViewContainer');
-    const tableContainer = document.getElementById('tableViewContainer');
+// Simple, working TTP filtering - no external dependencies
+let currentFilters = {
+    search: '',
+    severity: '',
+    source: '',
+    tactic: ''
+};
+
+let currentPage = 1;
+const itemsPerPage = 20;
+let allRows = [];
+let filteredRows = [];
+
+// Initialize when page loads
+window.addEventListener('DOMContentLoaded', function() {
+    console.log('Page loaded, initializing filters...');
     
-    cardViewBtn?.addEventListener('click', function() {
-        cardViewBtn.classList.add('active');
-        tableViewBtn.classList.remove('active');
-        cardContainer.style.display = 'block';
-        tableContainer.style.display = 'none';
-        localStorage.setItem('ttpsView', 'card');
-    });
+    // Get ALL table rows from the entire document
+    allRows = Array.from(document.querySelectorAll('.technique-row'));
+    filteredRows = [...allRows];
     
-    tableViewBtn?.addEventListener('click', function() {
-        tableViewBtn.classList.add('active');
-        cardViewBtn.classList.remove('active');
-        cardContainer.style.display = 'none';
-        tableContainer.style.display = 'block';
-        localStorage.setItem('ttpsView', 'table');
-    });
+    console.log('Found', allRows.length, 'total rows to search through');
     
-    // Restore view preference
-    const savedView = localStorage.getItem('ttpsView');
-    if (savedView === 'table') {
-        tableViewBtn?.click();
+    if (allRows.length > 0) {
+        console.log('Sample row:', allRows[0].dataset);
+        console.log('Sample search text:', [
+            allRows[0].querySelector('strong')?.textContent || '',
+            allRows[0].querySelector('small.text-muted')?.textContent || '',
+            allRows[0].querySelector('.mitre-id')?.textContent || ''
+        ].join(' '));
     }
+    
+    // Set up search input
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        let searchTimeout;
+        searchInput.oninput = function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                currentFilters.search = this.value.toLowerCase().trim();
+                console.log('Search term:', currentFilters.search);
+                filterAndDisplay();
+            }, 300);
+        };
+        console.log('Search input set up');
+    }
+    
+    // Set up severity filter
+    const severityFilter = document.getElementById('severityFilter');
+    if (severityFilter) {
+        severityFilter.onchange = function() {
+            currentFilters.severity = this.value;
+            console.log('Severity changed to:', this.value);
+            filterAndDisplay();
+        };
+        console.log('Severity filter set up');
+    }
+    
+    // Set up source filter
+    const sourceFilter = document.getElementById('sourceFilter');
+    if (sourceFilter) {
+        sourceFilter.onchange = function() {
+            currentFilters.source = this.value;
+            console.log('Source changed to:', this.value);
+            filterAndDisplay();
+        };
+        console.log('Source filter set up');
+    }
+    
+    // Set up tactic filter
+    const tacticFilter = document.getElementById('tacticFilter');
+    if (tacticFilter) {
+        tacticFilter.onchange = function() {
+            currentFilters.tactic = this.value;
+            console.log('Tactic changed to:', this.value);
+            filterAndDisplay();
+        };
+        console.log('Tactic filter set up');
+    }
+    
+    // Initial display - show all rows
+    console.log('Showing all', allRows.length, 'rows initially');
+    allRows.forEach(row => {
+        row.style.display = 'table-row';
+    });
 });
 
-// Show threat details modal
+function filterAndDisplay() {
+    console.log('Filtering with:', currentFilters);
+    
+    // Filter ALL rows, not just the first page
+    filteredRows = allRows.filter(row => {
+        // Search filter
+        if (currentFilters.search) {
+            const searchText = [
+                row.querySelector('strong')?.textContent || '',
+                row.querySelector('small.text-muted')?.textContent || '',
+                row.querySelector('.mitre-id')?.textContent || ''
+            ].join(' ').toLowerCase();
+            
+            if (!searchText.includes(currentFilters.search)) {
+                return false;
+            }
+        }
+        
+        // Severity filter
+        if (currentFilters.severity) {
+            if (row.dataset.severity !== currentFilters.severity) {
+                return false;
+            }
+        }
+        
+        // Source filter  
+        if (currentFilters.source) {
+            const rowSource = row.dataset.source;
+            if (currentFilters.source === 'RSS') {
+                // Handle RSS sources
+                const rssNames = ['BleepingComputer', 'Krebs on Security', 'The Hacker News'];
+                if (!rssNames.includes(rowSource)) {
+                    return false;
+                }
+            } else if (rowSource !== currentFilters.source) {
+                return false;
+            }
+        }
+        
+        // Tactic filter
+        if (currentFilters.tactic) {
+            if (row.dataset.tactic !== currentFilters.tactic) {
+                return false;
+            }
+        }
+        
+        return true;
+    });
+    
+    console.log('Filtered to', filteredRows.length, 'rows out of', allRows.length, 'total rows');
+    
+    // Update display to show ALL filtered results
+    updateDisplay();
+}
+
+function updateDisplay() {
+    // Show all filtered rows (no pagination)
+    allRows.forEach(row => {
+        row.style.display = 'none';
+    });
+    
+    // Show all filtered rows
+    filteredRows.forEach(row => {
+        row.style.display = 'table-row';
+    });
+    
+    // Handle empty state
+    const tableContainer = document.querySelector('.table-responsive');
+    const emptyState = document.getElementById('emptyState');
+    
+    if (filteredRows.length === 0) {
+        if (tableContainer) tableContainer.style.display = 'none';
+        if (emptyState) emptyState.style.display = 'block';
+    } else {
+        if (tableContainer) tableContainer.style.display = 'block';
+        if (emptyState) emptyState.style.display = 'none';
+    }
+}
+
+function updateCount() {
+    // Results count hidden - no longer displayed
+    return;
+}
+
+function updatePagination() {
+    // Pagination hidden - no longer displayed
+    return;
+}
+
+function changePage(page) {
+    const totalPages = Math.ceil(filteredRows.length / itemsPerPage);
+    if (page >= 1 && page <= totalPages) {
+        currentPage = page;
+        updateDisplay();
+        updatePagination();
+        updateCount();
+    }
+}
+
+function clearAllFilters() {
+    console.log('Clearing all filters');
+    
+    currentFilters = {
+        search: '',
+        severity: '',
+        source: '',
+        tactic: ''
+    };
+    
+    currentPage = 1;
+    
+    // Reset form controls
+    const searchInput = document.getElementById('searchInput');
+    const severityFilter = document.getElementById('severityFilter');
+    const sourceFilter = document.getElementById('sourceFilter');
+    const tacticFilter = document.getElementById('tacticFilter');
+    
+    if (searchInput) searchInput.value = '';
+    if (severityFilter) severityFilter.value = '';
+    if (sourceFilter) sourceFilter.value = '';
+    if (tacticFilter) tacticFilter.value = '';
+    
+    filterAndDisplay();
+}
+
 function showThreatDetails(threatId) {
     const modal = new bootstrap.Modal(document.getElementById('threatDetailsModal'));
     const content = document.getElementById('threatDetailsContent');
     
-    // Find threat data
-    const threatCard = document.querySelector(`[data-id="${threatId}"]`);
-    if (!threatCard) return;
+    const threatRow = document.querySelector(`[data-id="${threatId}"]`);
+    if (!threatRow) return;
     
-    const threatName = threatCard.querySelector('.card-title')?.textContent || 'Unknown';
-    const threatDesc = threatCard.querySelector('.card-text')?.textContent || 'No description available';
-    const severity = threatCard.dataset.severity || 'Unknown';
-    const source = threatCard.dataset.source || 'Unknown';
-    const tactic = threatCard.dataset.tactic || 'Unknown';
-    const mitreId = threatCard.querySelector('.mitre-id')?.textContent || '';
+    const threatName = threatRow.querySelector('strong')?.textContent || 'Unknown';
+    const threatDesc = threatRow.querySelector('small.text-muted')?.textContent || 'No description available';
+    const severity = threatRow.dataset.severity || 'Unknown';
+    const source = threatRow.dataset.source || 'Unknown';
+    const tactic = threatRow.dataset.tactic || 'Unknown';
+    const mitreId = threatRow.querySelector('.mitre-id')?.textContent || '';
     
     content.innerHTML = `
         <div class="threat-details">
@@ -649,40 +666,24 @@ function showThreatDetails(threatId) {
     modal.show();
 }
 
-// Advanced filters toggle
-function toggleAdvancedFilters() {
-    const panel = document.querySelector('.advanced-filters');
-    const button = document.querySelector('.advanced-filters-toggle');
-    
-    if (panel.style.display === 'none' || !panel.style.display) {
-        panel.style.display = 'block';
-        button.innerHTML = '<i class="fas fa-chevron-up me-1"></i>Hide Advanced Filters';
-    } else {
-        panel.style.display = 'none';
-        button.innerHTML = '<i class="fas fa-chevron-down me-1"></i>Show Advanced Filters';
-    }
-}
-
-// Open MITRE ATT&CK link with correct URL format
 function openMitreLink(techniqueId) {
     if (!techniqueId) return;
     
     let url;
     if (techniqueId.includes('.')) {
-        // Sub-technique: T1546.012 -> T1546/012
         const [main, sub] = techniqueId.split('.');
         url = `https://attack.mitre.org/techniques/${main}/${sub}/`;
     } else {
-        // Main technique: T1546 -> T1546
         url = `https://attack.mitre.org/techniques/${techniqueId}/`;
     }
     
     window.open(url, '_blank', 'noopener,noreferrer');
 }
 
-// Make functions available globally
+// Make functions globally available
+window.clearAllFilters = clearAllFilters;
+window.changePage = changePage;
 window.showThreatDetails = showThreatDetails;
-window.toggleAdvancedFilters = toggleAdvancedFilters;
 window.openMitreLink = openMitreLink;
 </script>
 {% endblock %}
