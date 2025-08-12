@@ -220,25 +220,61 @@
     <div class="row text-center">
         <div class="col-md-3">
             <div class="stat-item">
-                <div class="h4 text-danger mb-1">{{ actor_stats.total_actors or actors|length }}</div>
+                <div class="h4 text-danger mb-1">{{ actor_stats.total_actors if actor_stats else actors|length }}</div>
                 <small class="text-muted">Total Actors</small>
             </div>
         </div>
         <div class="col-md-3">
             <div class="stat-item">
-                <div class="h4 text-warning mb-1">{{ actor_stats.apt_groups or (actors|selectattr('name', 'match', '.*APT.*')|list|length) }}</div>
+                <div class="h4 text-warning mb-1">
+                    {% if actor_stats and actor_stats.apt_groups is defined %}
+                        {{ actor_stats.apt_groups }}
+                    {% else %}
+                        {% set apt_count = 0 %}
+                        {% for actor in actors %}
+                            {% if 'APT' in (actor.name or '') %}
+                                {% set apt_count = apt_count + 1 %}
+                            {% endif %}
+                        {% endfor %}
+                        {{ apt_count }}
+                    {% endif %}
+                </div>
                 <small class="text-muted">APT Groups</small>
             </div>
         </div>
         <div class="col-md-3">
             <div class="stat-item">
-                <div class="h4 text-info mb-1">{{ actor_stats.countries or (actors|map(attribute='country')|select|unique|list|length) }}</div>
+                <div class="h4 text-info mb-1">
+                    {% if actor_stats and actor_stats.countries is defined %}
+                        {{ actor_stats.countries }}
+                    {% else %}
+                        {% set countries = [] %}
+                        {% for actor in actors %}
+                            {% if actor.country and actor.country not in countries %}
+                                {% set _ = countries.append(actor.country) %}
+                            {% endif %}
+                        {% endfor %}
+                        {{ countries|length }}
+                    {% endif %}
+                </div>
                 <small class="text-muted">Countries</small>
             </div>
         </div>
         <div class="col-md-3">
             <div class="stat-item">
-                <div class="h4 text-success mb-1">{{ actor_stats.high_sophistication or (actors|selectattr('sophistication', 'equalto', 'High')|list|length) }}</div>
+                <div class="h4 text-success mb-1">
+                    {% if actor_stats and actor_stats.high_sophistication is defined %}
+                        {{ actor_stats.high_sophistication }}
+                    {% else %}
+                        {% set high_count = 0 %}
+                        {% for actor in actors %}
+                            {% if actor.sophistication == 'High' %}
+                                {% set high_count = high_count + 1 %}
+                            {% endif %}
+                        {% endfor %}
+                        {{ high_count }}
+                    {% endif %}
+                </div>
                 <small class="text-muted">High Sophistication</small>
             </div>
         </div>
