@@ -1,4 +1,4 @@
-# Optimized Dockerfile for Unraid deployment
+# Optimized Dockerfile for Unraid manual deployment
 FROM python:3.11-slim
 
 # Set environment variables
@@ -15,9 +15,8 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Create app directory and data directory
+# Create app directory
 WORKDIR /app
-RUN mkdir -p /app/data /app/logs
 
 # Copy requirements first for better caching
 COPY requirements.txt .
@@ -26,8 +25,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Create volume mount points for Unraid
-VOLUME ["/app/data", "/app/logs"]
+# Create data and logs directories
+RUN mkdir -p /app/data /app/logs
 
 # Ensure proper permissions for Unraid (99:100 is nobody:users)
 RUN chown -R 99:100 /app && \
@@ -41,27 +40,42 @@ EXPOSE 5000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:5000/api/stats || exit 1
 
-# Create entrypoint script
+# Create startup script - using simple sh syntax for compatibility
 RUN echo '#!/bin/sh\n\
-echo "Starting Threat Intelligence Dashboard..."\n\
-echo "Checking environment variables..."\n\
-echo "OTX_API_KEY: ${OTX_API_KEY:+[SET]${OTX_API_KEY:0:10}...}${OTX_API_KEY:-[NOT SET]}"\n\
-echo "Data directory: /app/data"\n\
-echo "Logs directory: /app/logs"\n\
+echo "========================================"\n\
+echo "Threat Intelligence Dashboard Starting"\n\
+echo "========================================"\n\
+echo "Environment Configuration:"\n\
+echo "  Flask Env: $FLASK_ENV"\n\
+echo "  Port: $PORT"\n\
+echo "  Data Dir: /app/data"\n\
+echo "  Logs Dir: /app/logs"\n\
+echo "  Timezone: ${TZ:-UTC}"\n\
+echo ""\n\
+echo "API Keys Status:"\n\
+if [ -z "$OTX_API_KEY" ]; then\n\
+    echo "  OTX API: [NOT SET]"\n\
+else\n\
+    echo "  OTX API: [CONFIGURED]"\n\
+fi\n\
+echo "========================================"\n\
 \n\
 # Initialize data if not exists\n\
 if [ ! -f /app/data/threats.json ]; then\n\
-    echo "Initializing threat data..."\n\
+    echo "First run detected - initializing data..."\n\
     python initialize_data.py\n\
+    echo "Initial data created successfully"\n\
 fi\n\
 \n\
 # Start the application\n\
-echo "Starting Flask application on port ${PORT}..."\n\
+echo "Starting Flask application..."\n\
+echo "Access the dashboard at: http://[YOUR-IP]:$PORT"\n\
+echo "========================================"\n\
 python app.py\n\
 ' > /app/start.sh && chmod +x /app/start.sh
 
 # Set user to nobody (Unraid standard)
 USER 99:100
 
-# Use the entrypoint script
+# Use the startup script
 ENTRYPOINT ["/app/start.sh"]
