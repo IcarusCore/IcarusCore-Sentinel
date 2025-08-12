@@ -1,0 +1,170 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>ThreatIntelDashboard</Name>
+  <Repository>ghcr.io/yourusername/threat-intel-dashboard</Repository>
+  <Registry>https://ghcr.io</Registry>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/yourusername/threat-intel-dashboard/issues</Support>
+  <Project>https://github.com/yourusername/threat-intel-dashboard</Project>
+  <Overview>Threat Intelligence Dashboard - A comprehensive cybersecurity threat monitoring platform that aggregates data from MITRE ATT&amp;CK, CISA, AlienVault OTX, and security RSS feeds. Features real-time threat tracking, APT group profiles, and security tool analysis.</Overview>
+  <Category>Security: Network:Management Status:Stable</Category>
+  <WebUI>http://[IP]:[PORT:5000]</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/yourusername/threat-intel-dashboard/main/unraid-template.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/yourusername/threat-intel-dashboard/main/static/img/logo.png</Icon>
+  <ExtraParams/>
+  <PostArgs/>
+  <CPUset/>
+  <DateInstalled></DateInstalled>
+  <DonateText>If you find this useful, consider starring the GitHub repo!</DonateText>
+  <DonateLink>https://github.com/yourusername/threat-intel-dashboard</DonateLink>
+  <Description>
+    Threat Intelligence Dashboard aggregates and displays cybersecurity threat data from multiple sources:
+    
+    &#xD;
+    Features:
+    - MITRE ATT&amp;CK Framework integration
+    - CISA security alerts
+    - AlienVault OTX threat pulses
+    - RSS feed aggregation from security blogs
+    - APT group tracking
+    - Security tools database
+    - Real-time threat monitoring
+    
+    &#xD;
+    Setup:
+    1. Add your AlienVault OTX API key in the environment variables
+    2. Map the data directory to persist threat intelligence
+    3. Map the logs directory for debugging (optional)
+    4. Access the dashboard on port 5000
+    
+    &#xD;
+    Default credentials: No authentication required (add reverse proxy with auth for production)
+  </Description>
+  <Networking>
+    <Mode>bridge</Mode>
+    <Publish>
+      <Port>
+        <HostPort>5000</HostPort>
+        <ContainerPort>5000</ContainerPort>
+        <Protocol>tcp</Protocol>
+      </Port>
+    </Publish>
+  </Networking>
+  <Data>
+    <Volume>
+      <HostDir>/mnt/user/appdata/threatintel/data</HostDir>
+      <ContainerDir>/app/data</ContainerDir>
+      <Mode>rw</Mode>
+    </Volume>
+    <Volume>
+      <HostDir>/mnt/user/appdata/threatintel/logs</HostDir>
+      <ContainerDir>/app/logs</ContainerDir>
+      <Mode>rw</Mode>
+    </Volume>
+  </Data>
+  <Environment>
+    <Variable>
+      <Value></Value>
+      <Name>OTX_API_KEY</Name>
+      <Mode/>
+      <Description>AlienVault OTX API Key - Get yours free at https://otx.alienvault.com/api</Description>
+      <Display>always</Display>
+      <Required>false</Required>
+      <Mask>true</Mask>
+    </Variable>
+    <Variable>
+      <Value>your-secret-key-change-this-$(openssl rand -hex 32)</Value>
+      <Name>SECRET_KEY</Name>
+      <Mode/>
+      <Description>Flask Secret Key - Used for session encryption (auto-generated if not set)</Description>
+      <Display>advanced</Display>
+      <Required>false</Required>
+      <Mask>true</Mask>
+    </Variable>
+    <Variable>
+      <Value>production</Value>
+      <Name>FLASK_ENV</Name>
+      <Mode/>
+      <Description>Flask Environment (production/development)</Description>
+      <Display>advanced</Display>
+      <Required>false</Required>
+      <Mask>false</Mask>
+    </Variable>
+    <Variable>
+      <Value>False</Value>
+      <Name>FLASK_DEBUG</Name>
+      <Mode/>
+      <Description>Enable Flask Debug Mode (True/False)</Description>
+      <Display>advanced</Display>
+      <Required>false</Required>
+      <Mask>false</Mask>
+    </Variable>
+    <Variable>
+      <Value>24</Value>
+      <Name>MITRE_REFRESH_INTERVAL</Name>
+      <Mode/>
+      <Description>MITRE ATT&amp;CK data refresh interval in hours</Description>
+      <Display>advanced</Display>
+      <Required>false</Required>
+      <Mask>false</Mask>
+    </Variable>
+    <Variable>
+      <Value>6</Value>
+      <Name>OTX_REFRESH_INTERVAL</Name>
+      <Mode/>
+      <Description>AlienVault OTX data refresh interval in hours</Description>
+      <Display>advanced</Display>
+      <Required>false</Required>
+      <Mask>false</Mask>
+    </Variable>
+    <Variable>
+      <Value>4</Value>
+      <Name>CISA_REFRESH_INTERVAL</Name>
+      <Mode/>
+      <Description>CISA alerts refresh interval in hours</Description>
+      <Display>advanced</Display>
+      <Required>false</Required>
+      <Mask>false</Mask>
+    </Variable>
+    <Variable>
+      <Value>2</Value>
+      <Name>RSS_REFRESH_INTERVAL</Name>
+      <Mode/>
+      <Description>RSS feeds refresh interval in hours</Description>
+      <Display>advanced</Display>
+      <Required>false</Required>
+      <Mask>false</Mask>
+    </Variable>
+    <Variable>
+      <Value>America/New_York</Value>
+      <Name>TZ</Name>
+      <Mode/>
+      <Description>Timezone for the container</Description>
+      <Display>always</Display>
+      <Required>false</Required>
+      <Mask>false</Mask>
+    </Variable>
+  </Environment>
+  <Labels/>
+  <Config Name="Web Interface Port" Target="5000" Default="5000" Mode="tcp" Description="Web interface port" Type="Port" Display="always" Required="true" Mask="false">5000</Config>
+  <Config Name="Data Directory" Target="/app/data" Default="/mnt/user/appdata/threatintel/data" Mode="rw" Description="Persistent storage for threat intelligence data" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/threatintel/data</Config>
+  <Config Name="Logs Directory" Target="/app/logs" Default="/mnt/user/appdata/threatintel/logs" Mode="rw" Description="Application logs directory" Type="Path" Display="advanced" Required="false" Mask="false">/mnt/user/appdata/threatintel/logs</Config>
+  <Config Name="OTX API Key" Target="OTX_API_KEY" Default="" Mode="" Description="AlienVault OTX API Key - Get free at https://otx.alienvault.com/api" Type="Variable" Display="always" Required="false" Mask="true"></Config>
+  <Config Name="Secret Key" Target="SECRET_KEY" Default="your-secret-key-change-this" Mode="" Description="Flask Secret Key for session encryption" Type="Variable" Display="advanced" Required="false" Mask="true">your-secret-key-change-this</Config>
+  <Config Name="Timezone" Target="TZ" Default="America/New_York" Mode="" Description="Container timezone" Type="Variable" Display="always" Required="false" Mask="false">America/New_York</Config>
+  <Beta>False</Beta>
+  <Branch>main</Branch>
+  <Changes>
+    ### 2024-01-15 - v1.0.0
+    - Initial release
+    - MITRE ATT&amp;CK integration
+    - CISA alerts
+    - AlienVault OTX support
+    - RSS feed aggregation
+    - APT group tracking
+    - Security tools database
+  </Changes>
+</Container>

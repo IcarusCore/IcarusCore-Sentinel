@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  threatintel:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    image: threat-intel-dashboard:latest
+    container_name: threat-intel-dashboard
+    restart: unless-stopped
+    ports:
+      - "${PORT:-5000}:5000"
+    environment:
+      # Flask Configuration
+      - FLASK_ENV=${FLASK_ENV:-production}
+      - FLASK_DEBUG=${FLASK_DEBUG:-False}
+      - SECRET_KEY=${SECRET_KEY:-your-secret-key-here-change-in-production}
+      
+      # API Keys
+      - OTX_API_KEY=${OTX_API_KEY:-}
+      
+      # Refresh Intervals (hours)
+      - MITRE_REFRESH_INTERVAL=${MITRE_REFRESH_INTERVAL:-24}
+      - OTX_REFRESH_INTERVAL=${OTX_REFRESH_INTERVAL:-6}
+      - CISA_REFRESH_INTERVAL=${CISA_REFRESH_INTERVAL:-4}
+      - RSS_REFRESH_INTERVAL=${RSS_REFRESH_INTERVAL:-2}
+      
+      # Timezone
+      - TZ=${TZ:-UTC}
+      
+    volumes:
+      # Persistent data storage
+      - ./data:/app/data
+      - ./logs:/app/logs
+      
+      # For development - mount source code (comment out in production)
+      # - ./src:/app/src
+      # - ./templates:/app/templates
+      # - ./static:/app/static
+      
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/stats"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+      
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        
+    networks:
+      - threatintel-network
+
+networks:
+  threatintel-network:
+    driver: bridge
+
+volumes:
+  threat-data:
+    driver: local
+  threat-logs:
+    driver: local
