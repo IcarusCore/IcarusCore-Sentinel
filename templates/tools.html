@@ -22,6 +22,10 @@
         letter-spacing: 0.5px;
     }
     
+    .risk-level-critical {
+        border-left-color: #8b0000 !important;
+    }
+    
     .risk-level-high {
         border-left-color: #dc3545 !important;
     }
@@ -108,7 +112,7 @@
     </div>
 </div>
 
-<!-- Tool Statistics -->
+<!-- Tool Statistics - FIXED CALCULATION -->
 <div class="tool-stats">
     <div class="row text-center">
         <div class="col-md-3">
@@ -120,13 +124,7 @@
         <div class="col-md-3">
             <div class="stat-item">
                 <div class="h4 text-success mb-1">
-                    {% set dual_use_count = 0 %}
-                    {% for tool in tools %}
-                        {% if tool.is_legitimate %}
-                            {% set dual_use_count = dual_use_count + 1 %}
-                        {% endif %}
-                    {% endfor %}
-                    {{ dual_use_count }}
+                    {{ tools|selectattr('is_legitimate', 'equalto', true)|list|length }}
                 </div>
                 <small class="text-muted">Dual-Use Tools</small>
             </div>
@@ -134,13 +132,7 @@
         <div class="col-md-3">
             <div class="stat-item">
                 <div class="h4 text-warning mb-1">
-                    {% set malware_count = 0 %}
-                    {% for tool in tools %}
-                        {% if tool.category == 'Malware' %}
-                            {% set malware_count = malware_count + 1 %}
-                        {% endif %}
-                    {% endfor %}
-                    {{ malware_count }}
+                    {{ tools|selectattr('category', 'equalto', 'Malware')|list|length }}
                 </div>
                 <small class="text-muted">Malware Tools</small>
             </div>
@@ -148,11 +140,7 @@
         <div class="col-md-3">
             <div class="stat-item">
                 <div class="h4 text-info mb-1">
-                    {% set total_associations = 0 %}
-                    {% for tool in tools %}
-                        {% set total_associations = total_associations + tool.used_by|length %}
-                    {% endfor %}
-                    {{ total_associations }}
+                    {{ tools|map(attribute='used_by')|map('length')|sum }}
                 </div>
                 <small class="text-muted">Actor Associations</small>
             </div>
@@ -188,6 +176,7 @@
                 <label for="riskFilter" class="form-label">Risk Level</label>
                 <select id="riskFilter" class="form-select">
                     <option value="">All Levels</option>
+                    <option value="Critical">Critical</option>
                     <option value="High">High</option>
                     <option value="Medium">Medium</option>
                     <option value="Low">Low</option>
@@ -221,10 +210,10 @@
         <div class="col-lg-6 col-xl-4 mb-4 tool-item" 
              data-category="{{ tool.category }}"
              data-platforms="{{ tool.platforms|join(',') }}"
-             data-risk="{{ tool.get('risk_level', 'Medium') }}"
+             data-risk="{{ tool.risk_level if tool.risk_level else 'Medium' }}"
              data-name="{{ tool.name|lower }}"
              data-description="{{ tool.description|lower }}">
-            <div class="card tool-card h-100 risk-level-{{ (tool.get_risk_level() if tool.get_risk_level else 'Low')|lower }}">
+            <div class="card tool-card h-100 risk-level-{{ (tool.risk_level if tool.risk_level else 'medium')|lower }}">
                 <div class="card-body position-relative">
                     <!-- Dual-use indicator -->
                     {% if tool.is_legitimate %}
@@ -312,7 +301,7 @@
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <div class="risk-indicator">
                                 <small class="text-muted">Risk Level:</small>
-                                {% set risk_level = tool.get('risk_level', 'Medium') %}
+                                {% set risk_level = tool.risk_level if tool.risk_level else 'Medium' %}
                                 <span class="badge 
                                     {% if risk_level == 'Critical' %}bg-danger
                                     {% elif risk_level == 'High' %}bg-danger
@@ -598,7 +587,7 @@ function showToolDetails(toolId) {
                 </div>
                 <div class="col-md-4 text-end">
                     <div class="risk-badge">
-                        <span class="badge ${riskLevel === 'High' ? 'bg-danger' : riskLevel === 'Medium' ? 'bg-warning' : 'bg-success'} fs-6">
+                        <span class="badge ${riskLevel === 'High' || riskLevel === 'Critical' ? 'bg-danger' : riskLevel === 'Medium' ? 'bg-warning' : 'bg-success'} fs-6">
                             ${riskLevel} Risk
                         </span>
                     </div>
@@ -623,7 +612,12 @@ function showToolDetails(toolId) {
             <div class="mb-4">
                 <h6>Associated MITRE ATT&CK Techniques</h6>
                 <div>
-                    ${techniques.map(technique => `<span class="badge bg-secondary me-1 mb-1">${technique}</span>`).join('')}
+                    ${techniques.map(technique => `
+                        <span class="badge bg-secondary me-1 mb-1" style="cursor: pointer;" 
+                              onclick="openMitreLink('${technique}')" title="View on MITRE ATT&CK">
+                            ${technique} <i class="fas fa-external-link-alt ms-1"></i>
+                        </span>
+                    `).join('')}
                 </div>
             </div>
             ` : ''}
@@ -656,25 +650,30 @@ function showToolReferences(toolId) {
     const modal = new bootstrap.Modal(document.getElementById('toolReferencesModal'));
     const content = document.getElementById('toolReferencesContent');
     
-    // Mock references - in real implementation, this would come from the tool data
+    // Real external URLs for references
     content.innerHTML = `
         <div class="references-list">
             <div class="mb-3">
                 <h6><i class="fas fa-external-link-alt me-2"></i>External Resources</h6>
                 <ul class="list-unstyled">
                     <li class="mb-2">
-                        <a href="#" target="_blank" class="text-decoration-none">
-                            <i class="fas fa-link me-2"></i>Official Documentation
+                        <a href="https://attack.mitre.org/software/" target="_blank" rel="noopener noreferrer" class="text-decoration-none">
+                            <i class="fas fa-shield-alt me-2"></i>MITRE ATT&CK Software
                         </a>
                     </li>
                     <li class="mb-2">
-                        <a href="#" target="_blank" class="text-decoration-none">
-                            <i class="fas fa-book me-2"></i>Security Analysis Report
+                        <a href="https://www.cisa.gov/known-exploited-vulnerabilities-catalog" target="_blank" rel="noopener noreferrer" class="text-decoration-none">
+                            <i class="fas fa-exclamation-triangle me-2"></i>CISA Known Exploited Vulnerabilities
                         </a>
                     </li>
                     <li class="mb-2">
-                        <a href="#" target="_blank" class="text-decoration-none">
-                            <i class="fas fa-shield-alt me-2"></i>MITRE ATT&CK Entry
+                        <a href="https://github.com/mitre/caldera" target="_blank" rel="noopener noreferrer" class="text-decoration-none">
+                            <i class="fab fa-github me-2"></i>MITRE Caldera (Adversary Emulation)
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="https://www.virustotal.com/" target="_blank" rel="noopener noreferrer" class="text-decoration-none">
+                            <i class="fas fa-virus me-2"></i>VirusTotal Analysis
                         </a>
                     </li>
                 </ul>
@@ -711,9 +710,30 @@ function getMitigationAdvice(category) {
     return advice[category] || advice['Default'];
 }
 
+// Helper function to open MITRE ATT&CK technique links
+function openMitreLink(techniqueId) {
+    if (!techniqueId || !techniqueId.startsWith('T')) {
+        console.warn('Invalid MITRE technique ID:', techniqueId);
+        return;
+    }
+    
+    let url;
+    if (techniqueId.includes('.')) {
+        // Sub-technique: T1546.012 -> T1546/012
+        const [main, sub] = techniqueId.split('.');
+        url = `https://attack.mitre.org/techniques/${main}/${sub}/`;
+    } else {
+        // Main technique: T1546 -> T1546
+        url = `https://attack.mitre.org/techniques/${techniqueId}/`;
+    }
+    
+    window.open(url, '_blank', 'noopener,noreferrer');
+}
+
 // Make functions globally available
 window.clearToolFilters = clearToolFilters;
 window.showToolDetails = showToolDetails;
 window.showToolReferences = showToolReferences;
+window.openMitreLink = openMitreLink;
 </script>
 {% endblock %}
