@@ -4,17 +4,17 @@
 
 {% block extra_css %}
 <style>
+    /* Professional minimalist hero section */
     .hero-section {
-        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
         color: white;
-        padding: 4rem 0;
+        padding: 2rem 0;
         margin-bottom: 2rem;
-        border-radius: 15px;
         position: relative;
         overflow: hidden;
-        border: 1px solid rgba(255,255,255,0.1);
     }
     
+    /* Subtle geometric pattern overlay */
     .hero-section::before {
         content: '';
         position: absolute;
@@ -22,13 +22,11 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
-        animation: backgroundMove 20s linear infinite;
-    }
-    
-    @keyframes backgroundMove {
-        0% { transform: translateX(0) translateY(0); }
-        100% { transform: translateX(-10px) translateY(-10px); }
+        background-image: 
+            linear-gradient(30deg, rgba(255,255,255,0.03) 12%, transparent 12.5%, transparent 87%, rgba(255,255,255,0.03) 87.5%, rgba(255,255,255,0.03)),
+            linear-gradient(150deg, rgba(255,255,255,0.03) 12%, transparent 12.5%, transparent 87%, rgba(255,255,255,0.03) 87.5%, rgba(255,255,255,0.03));
+        background-size: 20px 35px;
+        background-position: 0 0, 0 0;
     }
     
     .hero-content {
@@ -36,122 +34,204 @@
         z-index: 2;
     }
     
-    .hero-section h1,
-    .hero-section .display-4 {
-        color: white !important;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    .hero-section h1 {
+        font-size: 1.875rem;
+        font-weight: 300;
+        letter-spacing: -0.5px;
+        margin-bottom: 0.5rem;
+        color: white;
     }
     
-    .hero-section .lead,
-    .hero-section p {
-        color: rgba(255,255,255,0.95) !important;
+    .hero-section .lead {
+        font-size: 1rem;
+        font-weight: 300;
+        opacity: 0.85;
+        margin-bottom: 0;
+        color: rgba(255,255,255,0.9);
     }
     
-    .hero-stats .h2 {
-        color: white !important;
-        font-weight: 700;
+    .system-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(255,255,255,0.1);
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8125rem;
+        border: 1px solid rgba(255,255,255,0.2);
     }
     
-    .hero-stats small {
-        color: rgba(255,255,255,0.9) !important;
+    .status-dot {
+        width: 6px;
+        height: 6px;
+        background: #00ff88;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
     }
     
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.5;
+        }
+    }
+    
+    /* Professional stat cards */
+    .stat-card {
+        background: white;
+        border: 1px solid #e3e6f0;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 3px;
+        height: 100%;
+        background: var(--accent-color, #6c757d);
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    
+    .stat-card.stat-threats {
+        --accent-color: #dc3545;
+    }
+    
+    .stat-card.stat-actors {
+        --accent-color: #6f42c1;
+    }
+    
+    .stat-card.stat-tools {
+        --accent-color: #198754;
+    }
+    
+    .stat-card.stat-updated {
+        --accent-color: #0dcaf0;
+    }
+    
+    .stat-card .card-body {
+        padding: 1.25rem;
+    }
+    
+    .stat-icon {
+        font-size: 1.25rem;
+        opacity: 0.8;
+    }
+    
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: 600;
+        line-height: 1;
+        margin: 0.25rem 0;
+    }
+    
+    .stat-label {
+        font-size: 0.8125rem;
+        color: #6c757d;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.25rem;
+    }
+    
+    .stat-sublabel {
+        font-size: 0.75rem;
+        color: #adb5bd;
+        font-weight: 400;
+    }
+    
+    /* Content improvements */
     .activity-item {
         transition: all 0.3s ease;
-        border-left: 4px solid transparent;
+        border-left: 3px solid transparent;
         background-color: white;
         border: 1px solid #e9ecef;
     }
     
     .activity-item:hover {
-        transform: translateX(3px);
+        transform: translateX(2px);
         border-left-color: #0d6efd;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
     
-    /* Button improvements */
-    .btn-light {
-        background-color: white;
-        border-color: white;
-        color: #0d6efd;
-        font-weight: 600;
+    /* Data source cards */
+    .data-source-item {
+        text-align: center;
+        padding: 1rem;
+        transition: transform 0.2s ease;
     }
     
-    .btn-light:hover {
-        background-color: rgba(255,255,255,0.9);
-        border-color: rgba(255,255,255,0.9);
-        color: #0a58ca;
-        transform: translateY(-1px);
-    }
-    
-    .btn-outline-light {
-        color: white;
-        border-color: rgba(255,255,255,0.7);
-        font-weight: 600;
-    }
-    
-    .btn-outline-light:hover {
-        background-color: rgba(255,255,255,0.1);
-        border-color: white;
-        color: white;
-        transform: translateY(-1px);
-    }
-    
-    /* Data source improvements */
-    .data-source-item h6 {
-        color: #212529;
-        font-weight: 600;
-    }
-    
-    .data-source-item small {
-        color: #6c757d;
+    .data-source-item:hover {
+        transform: translateY(-3px);
     }
     
     .source-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 0.75rem;
+        font-size: 1.25rem;
+        background: linear-gradient(135deg, var(--icon-bg-start, #6c757d) 0%, var(--icon-bg-end, #495057) 100%);
+        color: white;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        transition: transform 0.3s ease;
     }
     
-    .data-source-item:hover .source-icon {
-        transform: scale(1.05);
+    .source-icon.mitre {
+        --icon-bg-start: #7c3aed;
+        --icon-bg-end: #6d28d9;
+    }
+    
+    .source-icon.cisa {
+        --icon-bg-start: #0dcaf0;
+        --icon-bg-end: #0aa2c0;
+    }
+    
+    .source-icon.otx {
+        --icon-bg-start: #198754;
+        --icon-bg-end: #157347;
+    }
+    
+    .data-source-item h6 {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #2d3436;
+        margin-bottom: 0.25rem;
+    }
+    
+    .data-source-item small {
+        font-size: 0.75rem;
+        color: #6c757d;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
+<!-- Simplified Professional Hero Section -->
 <div class="hero-section">
     <div class="hero-content">
         <div class="container">
             <div class="row align-items-center">
-                <div class="col-lg-8">
-                    <h1 class="display-4 fw-bold mb-3">
-                        <i class="fas fa-shield-alt me-3"></i>
-                        Threat Intelligence Dashboard
-                    </h1>
-                    <p class="lead mb-4">
-                        Stay ahead of cyber threats with real-time intelligence from MITRE ATT&CK, CISA, and leading security sources.
-                    </p>
-                    <div class="d-flex gap-3 flex-wrap">
-                        <a href="{{ url_for('ttps') }}" class="btn btn-light btn-lg">
-                            <i class="fas fa-crosshairs me-2"></i>Explore TTPs
-                        </a>
-                        <button class="btn btn-outline-light btn-lg" onclick="refreshData()">
-                            <i class="fas fa-sync-alt me-2"></i>Refresh Data
-                        </button>
-                    </div>
+                <div class="col-md-9">
+                    <h1>Threat Intelligence Dashboard</h1>
+                    <p class="lead">Real-time cybersecurity threat monitoring and analysis</p>
                 </div>
-                <div class="col-lg-4 text-center">
-                    <div class="hero-stats">
-                        <div class="row">
-                            <div class="col-6 mb-3">
-                                <div class="h2 fw-bold" data-stat="total_threats">{{ stats.total_threats or 0 }}</div>
-                                <small class="text-light">Active Threats</small>
-                            </div>
-                            <div class="col-6 mb-3">
-                                <div class="h2 fw-bold" data-stat="total_actors">{{ stats.total_actors or 0 }}</div>
-                                <small class="text-light">Threat Actors</small>
-                            </div>
-                        </div>
+                <div class="col-md-3 text-md-end">
+                    <div class="system-status">
+                        <span class="status-dot"></span>
+                        <span>System Online</span>
                     </div>
                 </div>
             </div>
@@ -159,50 +239,74 @@
     </div>
 </div>
 
-<!-- Statistics Cards -->
+<!-- Statistics Cards Row -->
 <div class="row mb-4">
     <div class="col-lg-3 col-md-6 mb-3">
         <div class="card stat-card stat-threats h-100" style="cursor: pointer;" onclick="window.location.href='{{ url_for('ttps') }}'">
-            <div class="card-body text-center">
-                <i class="fas fa-exclamation-triangle stat-icon text-danger mb-3"></i>
-                <div class="stat-number text-danger" data-stat="total_threats">{{ stats.total_threats or 0 }}</div>
-                <div class="stat-label">Total Threats</div>
-                <small class="text-muted mt-2 d-block">Active TTPs & Vulnerabilities</small>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="stat-label">Threats</div>
+                        <div class="stat-number text-danger">{{ stats.total_threats or 0 }}</div>
+                        <div class="stat-sublabel">Active TTPs</div>
+                    </div>
+                    <div class="stat-icon text-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
     
     <div class="col-lg-3 col-md-6 mb-3">
         <div class="card stat-card stat-actors h-100" style="cursor: pointer;" onclick="window.location.href='{{ url_for('actors') }}'">
-            <div class="card-body text-center">
-                <i class="fas fa-user-secret stat-icon text-purple mb-3"></i>
-                <div class="stat-number text-purple" data-stat="total_actors">{{ stats.total_actors or 0 }}</div>
-                <div class="stat-label">Threat Actors</div>
-                <small class="text-muted mt-2 d-block">Known Adversary Groups</small>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="stat-label">Actors</div>
+                        <div class="stat-number" style="color: #6f42c1;">{{ stats.total_actors or 0 }}</div>
+                        <div class="stat-sublabel">Known Groups</div>
+                    </div>
+                    <div class="stat-icon" style="color: #6f42c1;">
+                        <i class="fas fa-user-secret"></i>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
     
     <div class="col-lg-3 col-md-6 mb-3">
         <div class="card stat-card stat-tools h-100" style="cursor: pointer;" onclick="window.location.href='{{ url_for('tools') }}'">
-            <div class="card-body text-center">
-                <i class="fas fa-tools stat-icon text-success mb-3"></i>
-                <div class="stat-number text-success" data-stat="total_tools">{{ stats.total_tools or 0 }}</div>
-                <div class="stat-label">Security Tools</div>
-                <small class="text-muted mt-2 d-block">Techniques & Utilities</small>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="stat-label">Tools</div>
+                        <div class="stat-number text-success">{{ stats.total_tools or 0 }}</div>
+                        <div class="stat-sublabel">Tracked</div>
+                    </div>
+                    <div class="stat-icon text-success">
+                        <i class="fas fa-tools"></i>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
     
     <div class="col-lg-3 col-md-6 mb-3">
         <div class="card stat-card stat-updated h-100">
-            <div class="card-body text-center">
-                <i class="fas fa-clock stat-icon text-info mb-3"></i>
-                <div class="stat-number text-info">
-                    <small>{{ stats.last_updated|format_date if stats.last_updated else 'Never' }}</small>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="stat-label">Updated</div>
+                        <div class="stat-number text-info" style="font-size: 0.9rem;">
+                            {{ stats.last_updated|format_date if stats.last_updated else 'Never' }}
+                        </div>
+                        <div class="stat-sublabel">Last Sync</div>
+                    </div>
+                    <div class="stat-icon text-info">
+                        <i class="fas fa-clock"></i>
+                    </div>
                 </div>
-                <div class="stat-label">Last Updated</div>
-                <small class="text-muted mt-2 d-block">Data Refresh Status</small>
             </div>
         </div>
     </div>
@@ -213,66 +317,49 @@
     <!-- Recent Threats -->
     <div class="col-lg-8 mb-4">
         <div class="card h-100">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-bolt text-warning me-2"></i>
-                    Recent Threat Intelligence
-                </h5>
-                <a href="{{ url_for('ttps') }}" class="btn btn-sm btn-outline-primary">
-                    View All <i class="fas fa-arrow-right ms-1"></i>
-                </a>
+            <div class="card-header bg-white border-bottom">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-stream text-primary me-2"></i>
+                        Recent Threat Intelligence
+                    </h5>
+                    <a href="{{ url_for('ttps') }}" class="btn btn-sm btn-outline-primary">
+                        View All <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
             </div>
             <div class="card-body">
                 {% if recent_threats %}
                     <div class="threat-timeline">
                         {% for threat in recent_threats %}
-                        <div class="activity-item threat-item p-3 mb-3 border rounded" 
-                             data-severity="{{ threat.severity|lower }}"
-                             data-source="{{ threat.source }}"
-                             data-date="{{ threat.date }}">
+                        <div class="activity-item threat-item p-3 mb-3 border rounded">
                             <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h6 class="threat-title mb-1">{{ threat.name|truncate_text(80) }}</h6>
-                                <div class="threat-badges">
+                                <h6 class="mb-1">{{ threat.name|truncate_text(80) }}</h6>
+                                <div>
                                     <span class="badge severity-{{ threat.severity|lower }}">{{ threat.severity }}</span>
-                                    <span class="badge bg-secondary">{{ threat.source }}</span>
                                 </div>
                             </div>
                             
-                            <p class="threat-description text-muted small mb-2">
+                            <p class="text-muted small mb-2">
                                 {{ threat.description|truncate_text(120) }}
                             </p>
                             
                             <div class="d-flex justify-content-between align-items-center">
-                                <div class="threat-meta">
-                                    {% if threat.tactic %}
-                                    <small class="text-muted">
-                                        <i class="fas fa-crosshairs me-1"></i>{{ threat.tactic }}
-                                    </small>
-                                    {% endif %}
-                                </div>
+                                <small class="text-muted">
+                                    <i class="fas fa-tag me-1"></i>{{ threat.source }}
+                                </small>
                                 <small class="text-muted">{{ threat.date|format_date }}</small>
                             </div>
-                            
-                            {% if threat.tags %}
-                            <div class="threat-tags mt-2">
-                                {% for tag in threat.tags[:4] %}
-                                <span class="badge bg-light text-dark me-1">{{ tag }}</span>
-                                {% endfor %}
-                                {% if threat.tags|length > 4 %}
-                                <span class="badge bg-light text-dark">+{{ threat.tags|length - 4 }} more</span>
-                                {% endif %}
-                            </div>
-                            {% endif %}
                         </div>
                         {% endfor %}
                     </div>
                 {% else %}
-                    <div class="text-center py-5 text-muted">
-                        <i class="fas fa-database fa-3x mb-3 opacity-50"></i>
-                        <h5>No Recent Threats</h5>
-                        <p>Threat intelligence data will appear here once loaded.</p>
-                        <button class="btn btn-primary" onclick="refreshData()">
-                            <i class="fas fa-sync-alt me-2"></i>Load Data
+                    <div class="text-center py-5">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No Recent Threats</h5>
+                        <p class="text-muted">Threat data will appear here once loaded.</p>
+                        <button class="btn btn-primary btn-sm" onclick="refreshData()">
+                            <i class="fas fa-sync-alt me-2"></i>Refresh Data
                         </button>
                     </div>
                 {% endif %}
@@ -282,31 +369,24 @@
     
     <!-- Sidebar -->
     <div class="col-lg-4">
-        <!-- Quick Actions -->
+        <!-- Quick Filters -->
         <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-bolt text-primary me-2"></i>
-                    Quick Actions
-                </h5>
+            <div class="card-header bg-white border-bottom">
+                <h6 class="mb-0">
+                    <i class="fas fa-filter text-secondary me-2"></i>
+                    Quick Filters
+                </h6>
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
-                    <a href="{{ url_for('ttps') }}?severity=Critical" class="btn btn-outline-danger">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        Critical Threats
+                    <a href="{{ url_for('ttps') }}?severity=Critical" class="btn btn-sm btn-outline-danger">
+                        <i class="fas fa-exclamation-circle me-2"></i>Critical Threats
                     </a>
-                    <a href="{{ url_for('ttps') }}?tactic=initial-access" class="btn btn-outline-warning">
-                        <i class="fas fa-door-open me-2"></i>
-                        Initial Access
+                    <a href="{{ url_for('ttps') }}?tactic=initial-access" class="btn btn-sm btn-outline-warning">
+                        <i class="fas fa-door-open me-2"></i>Initial Access
                     </a>
-                    <a href="{{ url_for('actors') }}" class="btn btn-outline-info">
-                        <i class="fas fa-user-secret me-2"></i>
-                        APT Groups
-                    </a>
-                    <a href="{{ url_for('tools') }}" class="btn btn-outline-success">
-                        <i class="fas fa-tools me-2"></i>
-                        Attack Tools
+                    <a href="{{ url_for('actors') }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-users me-2"></i>APT Groups
                     </a>
                 </div>
             </div>
@@ -314,113 +394,82 @@
         
         <!-- Top Threat Actors -->
         <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-users text-danger me-2"></i>
-                    Top Threat Actors
-                </h5>
-                <a href="{{ url_for('actors') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            <div class="card-header bg-white border-bottom">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">
+                        <i class="fas fa-user-shield text-danger me-2"></i>
+                        Active Threat Actors
+                    </h6>
+                    <a href="{{ url_for('actors') }}" class="text-decoration-none small">View all</a>
+                </div>
             </div>
             <div class="card-body">
                 {% if actors %}
-                    {% for actor in actors %}
-                    <div class="d-flex align-items-center mb-3 p-2 rounded" style="background-color: #f8f9fa;">
-                        <div class="avatar-sm bg-danger text-white rounded-circle d-flex align-items-center justify-content-center me-3">
-                            <i class="fas fa-user-ninja"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <h6 class="mb-1">{{ actor.name }}</h6>
-                            <small class="text-muted">{{ actor.country or 'Unknown' }}</small>
-                            {% if actor.targets %}
-                            <div class="mt-1">
-                                {% for target in actor.targets[:2] %}
-                                <span class="badge bg-secondary me-1">{{ target }}</span>
-                                {% endfor %}
+                    <div class="list-group list-group-flush">
+                        {% for actor in actors[:4] %}
+                        <div class="list-group-item px-0 py-2">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0 small">{{ actor.name }}</h6>
+                                    <small class="text-muted">{{ actor.country or 'Unknown' }}</small>
+                                </div>
+                                {% if actor.sophistication == 'High' %}
+                                <span class="badge bg-danger badge-sm">High</span>
+                                {% endif %}
                             </div>
-                            {% endif %}
                         </div>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
                 {% else %}
-                    <div class="text-center py-3 text-muted">
-                        <i class="fas fa-user-secret fa-2x mb-2 opacity-50"></i>
-                        <p class="mb-0">No threat actors loaded</p>
-                    </div>
+                    <p class="text-muted small text-center mb-0">No actors loaded</p>
                 {% endif %}
             </div>
         </div>
         
-        <!-- Common Tools -->
+        <!-- Data Sources -->
         <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-wrench text-warning me-2"></i>
-                    Common Attack Tools
-                </h5>
-                <a href="{{ url_for('tools') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            <div class="card-header bg-white border-bottom">
+                <h6 class="mb-0">
+                    <i class="fas fa-database text-info me-2"></i>
+                    Data Sources
+                </h6>
             </div>
             <div class="card-body">
-                {% if tools %}
-                    {% for tool in tools %}
-                    <div class="d-flex align-items-center mb-3 p-2 rounded" style="background-color: #f8f9fa;">
-                        <div class="avatar-sm bg-warning text-white rounded-circle d-flex align-items-center justify-content-center me-3">
-                            <i class="fas fa-cog"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <h6 class="mb-1">{{ tool.name }}</h6>
-                            <small class="text-muted">{{ tool.category }}</small>
-                            {% if tool.platforms %}
-                            <div class="mt-1">
-                                {% for platform in tool.platforms[:2] %}
-                                <span class="badge bg-info me-1">{{ platform }}</span>
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="text-center py-3 text-muted">
-                        <i class="fas fa-tools fa-2x mb-2 opacity-50"></i>
-                        <p class="mb-0">No tools loaded</p>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Data Sources Info -->
-<div class="row mt-5">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-body">
-                <div class="row text-center">
-                    <div class="col-md-4 mb-3">
+                <div class="row g-3">
+                    <div class="col-6">
                         <div class="data-source-item">
-                            <div class="source-icon bg-purple text-white rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                                <i class="fas fa-crosshairs fa-lg"></i>
+                            <div class="source-icon mitre">
+                                <i class="fas fa-crosshairs"></i>
                             </div>
-                            <h6>MITRE ATT&CK</h6>
-                            <small class="text-muted">Tactics, Techniques & Procedures</small>
+                            <h6>MITRE</h6>
+                            <small>ATT&CK Framework</small>
                         </div>
                     </div>
-                    <div class="col-md-4 mb-3">
+                    <div class="col-6">
                         <div class="data-source-item">
-                            <div class="source-icon bg-info text-white rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                                <i class="fas fa-shield-alt fa-lg"></i>
+                            <div class="source-icon cisa">
+                                <i class="fas fa-shield-alt"></i>
                             </div>
-                            <h6>CISA Alerts</h6>
-                            <small class="text-muted">Government Security Advisories</small>
+                            <h6>CISA</h6>
+                            <small>Gov Advisories</small>
                         </div>
                     </div>
-                    <div class="col-md-4 mb-3">
+                    <div class="col-6">
                         <div class="data-source-item">
-                            <div class="source-icon bg-success text-white rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                                <i class="fas fa-satellite fa-lg"></i>
+                            <div class="source-icon otx">
+                                <i class="fas fa-globe"></i>
                             </div>
-                            <h6>AlienVault OTX</h6>
-                            <small class="text-muted">Open Threat Exchange</small>
+                            <h6>OTX</h6>
+                            <small>Threat Exchange</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="data-source-item">
+                            <div class="source-icon">
+                                <i class="fas fa-rss"></i>
+                            </div>
+                            <h6>Feeds</h6>
+                            <small>Security News</small>
                         </div>
                     </div>
                 </div>
@@ -431,62 +480,20 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 <script>
 // Auto-refresh stats every 5 minutes
 setInterval(function() {
     fetch('/api/stats')
         .then(response => response.json())
         .then(data => {
-            // Update stat numbers with animation
-            if (window.Dashboard && window.Dashboard.updateStatsDisplay) {
-                window.Dashboard.updateStatsDisplay();
-            }
+            // Update stats if needed
+            console.log('Stats refreshed:', data);
         })
         .catch(error => console.warn('Error updating stats:', error));
 }, 5 * 60 * 1000);
 
-// Initialize dashboard-specific functionality
+// Initialize tooltips
 document.addEventListener('DOMContentLoaded', function() {
-    // Add click handlers for threat items
-    document.querySelectorAll('.threat-item').forEach(item => {
-        item.addEventListener('click', function() {
-            // Could expand to show more details or navigate to specific threat
-            console.log('Clicked threat:', this.querySelector('.threat-title').textContent);
-        });
-    });
-    
-    // Animate stat cards on scroll
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    };
-    
-    const observer = new IntersectionObserver(function(entries) {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('fade-in');
-            }
-        });
-    }, observerOptions);
-    
-    document.querySelectorAll('.stat-card').forEach(card => {
-        observer.observe(card);
-    });
-    
-    // Add hover effects to data source items
-    document.querySelectorAll('.data-source-item').forEach(item => {
-        item.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-3px)';
-            this.style.transition = 'transform 0.3s ease';
-        });
-        
-        item.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0)';
-        });
-    });
-    
-    // Initialize tooltips for better UX
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl);
