@@ -510,5 +510,48 @@
       "https://www.kaspersky.com/blog/equation-hdd-malware/"
     ],
     "source": "MITRE ATT&CK"
+  },
+  {
+    "id": "turla",
+    "name": "Turla",
+    "description": "Russian espionage group active since at least 2004. Known for sophisticated operations, advanced tradecraft, and long-term persistence in victim networks. Likely associated with Russian intelligence services.",
+    "country": "Russia",
+    "aliases": [
+      "Snake",
+      "Uroburos",
+      "Venomous Bear",
+      "Waterbug"
+    ],
+    "targets": [
+      "Government",
+      "Military",
+      "Embassies",
+      "Research Organizations"
+    ],
+    "techniques": [
+      "Watering Hole Attacks",
+      "Satellite Communication Hijacking",
+      "Rootkit Deployment",
+      "Living off the Land",
+      "Advanced Persistence"
+    ],
+    "tools": [
+      "Snake",
+      "Carbon",
+      "Gazer",
+      "Kazuar",
+      "ComRAT"
+    ],
+    "active_since": "2004",
+    "last_activity": "2024",
+    "sophistication": "High",
+    "attribution_confidence": "High",
+    "source": "MITRE ATT&CK",
+    "motivation": "Espionage, Intelligence Collection",
+    "campaigns": [
+      "Epic Turla Campaign",
+      "Satellite Turla Operations",
+      "Government Network Infiltration"
+    ]
   }
 ]

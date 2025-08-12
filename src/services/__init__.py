@@ -9,12 +9,10 @@ from .mitre_service import MitreService
 from .cisa_service import CISAService
 from .rss_service import RSSService
 from .otx_service import OTXService
-from .shodan_service import ShodanService
 
 __all__ = [
     'MitreService',
     'CISAService',
     'RSSService', 
-    'OTXService',
-    'ShodanService'
+    'OTXService'
 ]

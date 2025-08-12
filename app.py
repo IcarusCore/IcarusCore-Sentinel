@@ -5,12 +5,11 @@ import os
 from apscheduler.schedulers.background import BackgroundScheduler
 import atexit
 
-# Import our custom modules
+# Import our custom modules (Shodan service removed)
 from src.services.mitre_service import MitreService
 from src.services.otx_service import OTXService
 from src.services.cisa_service import CISAService
 from src.services.rss_service import RSSService
-from src.services.shodan_service import ShodanService
 from src.utils.data_processor import DataProcessor
 from src.utils.helpers import format_date, truncate_text
 from config import Config
@@ -18,12 +17,11 @@ from config import Config
 app = Flask(__name__)
 app.config.from_object(Config)
 
-# Initialize services
+# Initialize services (Shodan service removed)
 mitre_service = MitreService()
 otx_service = OTXService()
 cisa_service = CISAService()
 rss_service = RSSService()
-shodan_service = ShodanService()
 data_processor = DataProcessor()
 
 # Template filters
@@ -36,7 +34,7 @@ def get_current_time():
     return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 def update_threat_data():
-    """Update threat intelligence data from all sources"""
+    """Update threat intelligence data from all sources (Shodan removed)"""
     print(f"[{datetime.now()}] Starting threat data update...")
     
     try:
@@ -64,13 +62,6 @@ def update_threat_data():
             if otx_data:
                 data_processor.process_otx_data(otx_data)
                 print("✓ OTX data updated")
-        
-        # Update Shodan data (if API key is available)
-        if app.config['SHODAN_API_KEY']:
-            shodan_data = shodan_service.fetch_vulnerabilities()
-            if shodan_data:
-                data_processor.process_shodan_data(shodan_data)
-                print("✓ Shodan data updated")
         
         print(f"[{datetime.now()}] Threat data update completed")
         
@@ -168,6 +159,85 @@ def ttps():
         print(f"Error loading TTPs: {e}")
         return render_template('ttps.html', threats=[], tactics=[], pagination={})
 
+def calculate_actor_statistics(actors):
+    """Calculate comprehensive statistics for actors"""
+    if not actors:
+        return {
+            'total_actors': 0,
+            'apt_groups': 0,
+            'countries': 0,
+            'high_sophistication': 0,
+            'nation_state_groups': 0,
+            'active_groups': 0,
+            'by_country': {},
+            'by_sophistication': {'High': 0, 'Medium': 0, 'Low': 0, 'Unknown': 0},
+            'by_confidence': {'High': 0, 'Medium': 0, 'Low': 0},
+            'top_targets': []
+        }
+    
+    stats = {
+        'total_actors': len(actors),
+        'apt_groups': 0,
+        'countries': 0,
+        'high_sophistication': 0,
+        'nation_state_groups': 0,
+        'active_groups': 0,
+        'by_country': {},
+        'by_sophistication': {'High': 0, 'Medium': 0, 'Low': 0, 'Unknown': 0},
+        'by_confidence': {'High': 0, 'Medium': 0, 'Low': 0},
+        'top_targets': []
+    }
+    
+    countries = set()
+    all_targets = []
+    
+    for actor in actors:
+        # Count APT groups
+        if 'APT' in actor.get('name', '').upper():
+            stats['apt_groups'] += 1
+        
+        # Count nation-state groups
+        if actor.get('country') and actor.get('country') != '':
+            stats['nation_state_groups'] += 1
+            countries.add(actor['country'])
+            
+            # Count by country
+            country = actor['country']
+            stats['by_country'][country] = stats['by_country'].get(country, 0) + 1
+        
+        # Count by sophistication
+        sophistication = actor.get('sophistication', 'Unknown')
+        if sophistication in stats['by_sophistication']:
+            stats['by_sophistication'][sophistication] += 1
+        else:
+            stats['by_sophistication']['Unknown'] += 1
+            
+        if sophistication == 'High':
+            stats['high_sophistication'] += 1
+        
+        # Count by attribution confidence
+        confidence = actor.get('attribution_confidence', 'Medium')
+        if confidence in stats['by_confidence']:
+            stats['by_confidence'][confidence] += 1
+        
+        # Collect targets
+        if actor.get('targets'):
+            all_targets.extend(actor['targets'])
+        
+        # Count active groups (assume all loaded actors are active)
+        stats['active_groups'] += 1
+    
+    # Calculate unique countries
+    stats['countries'] = len(countries)
+    
+    # Calculate top targets
+    if all_targets:
+        from collections import Counter
+        target_counts = Counter(all_targets)
+        stats['top_targets'] = target_counts.most_common(5)
+    
+    return stats
+
 @app.route('/actors')
 def actors():
     """Threat actors page"""
@@ -191,11 +261,26 @@ def actors():
                 actor['sophistication'] = 'Unknown'
             if 'attribution_confidence' not in actor:
                 actor['attribution_confidence'] = 'Medium'
+            if 'country' not in actor:
+                actor['country'] = ''
+            if 'name' not in actor:
+                actor['name'] = 'Unknown Actor'
         
-        return render_template('actors.html', actors=actors)
+        # Calculate actor statistics
+        actor_stats = calculate_actor_statistics(actors)
+        
+        return render_template('actors.html', actors=actors, actor_stats=actor_stats)
+        
     except Exception as e:
         print(f"Error loading actors: {e}")
-        return render_template('actors.html', actors=[])
+        # Return empty data with basic stats to prevent template errors
+        empty_stats = {
+            'total_actors': 0,
+            'apt_groups': 0,
+            'countries': 0,
+            'high_sophistication': 0
+        }
+        return render_template('actors.html', actors=[], actor_stats=empty_stats)
 
 @app.route('/tools')
 def tools():
@@ -222,104 +307,6 @@ def tools():
     except Exception as e:
         print(f"Error loading tools: {e}")
         return render_template('tools.html', tools=[])
-
-@app.route('/shodan')
-def shodan():
-    """Shodan network intelligence page"""
-    try:
-        # Check if Shodan API key is configured
-        if not app.config.get('SHODAN_API_KEY'):
-            return render_template('shodan.html', 
-                                 error="Shodan API key not configured",
-                                 vulnerabilities=[],
-                                 stats=None,
-                                 api_info=None)
-        
-        # Get API information
-        api_info = shodan_service.get_api_info()
-        
-        # Try different search strategies based on available credits
-        vulnerabilities = []
-        
-        if api_info and api_info.get('query_credits', 0) > 0:
-            # If we have credits, try to fetch real data
-            vulnerabilities = shodan_service.fetch_vulnerabilities(limit=25)
-            
-            # If no vulnerabilities found, try a broader search
-            if not vulnerabilities:
-                vulnerabilities = shodan_service.fetch_internet_scan_data('port:80', limit=20)
-        
-        # If still no data or no credits, provide sample data for demonstration
-        if not vulnerabilities:
-            vulnerabilities = [
-                {
-                    'id': 'demo-shodan-1',
-                    'name': 'Demo: Exposed HTTP Service',
-                    'description': 'Sample data - Configure Shodan API key and credits to see real vulnerability data',
-                    'ip_address': '203.0.113.1',
-                    'port': 80,
-                    'service': 'Apache',
-                    'version': '2.4.41',
-                    'severity': 'Medium',
-                    'country': 'United States',
-                    'city': 'San Francisco',
-                    'organization': 'Example ISP',
-                    'vulnerabilities': ['CVE-2023-Demo'],
-                    'tags': ['demo', 'http', 'web-server'],
-                    'date': datetime.now().isoformat()
-                },
-                {
-                    'id': 'demo-shodan-2', 
-                    'name': 'Demo: Exposed SSH Service',
-                    'description': 'Sample data - Get Shodan credits to access real network intelligence',
-                    'ip_address': '203.0.113.2',
-                    'port': 22,
-                    'service': 'OpenSSH',
-                    'version': '7.4',
-                    'severity': 'Low',
-                    'country': 'Germany',
-                    'city': 'Berlin',
-                    'organization': 'Demo Hosting',
-                    'vulnerabilities': [],
-                    'tags': ['demo', 'ssh', 'remote-access'],
-                    'date': datetime.now().isoformat()
-                }
-            ]
-        
-        # Calculate statistics
-        stats = None
-        if vulnerabilities:
-            countries = {}
-            services = {}
-            
-            for vuln in vulnerabilities:
-                country = vuln.get('country', 'Unknown')
-                service = vuln.get('service', 'Unknown')
-                
-                countries[country] = countries.get(country, 0) + 1
-                services[service] = services.get(service, 0) + 1
-            
-            stats = {
-                'total_vulnerabilities': len(vulnerabilities),
-                'unique_countries': len(countries),
-                'unique_services': len(services),
-                'top_countries': sorted(countries.items(), key=lambda x: x[1], reverse=True)[:10],
-                'top_services': sorted(services.items(), key=lambda x: x[1], reverse=True)[:10]
-            }
-        
-        return render_template('shodan.html',
-                             vulnerabilities=vulnerabilities,
-                             stats=stats,
-                             api_info=api_info,
-                             error=None)
-        
-    except Exception as e:
-        print(f"Error loading Shodan data: {e}")
-        return render_template('shodan.html',
-                             error=f"Error loading Shodan data: {str(e)}",
-                             vulnerabilities=[],
-                             stats=None,
-                             api_info=None)
 
 @app.route('/about')
 def about():
@@ -361,69 +348,45 @@ def api_stats():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/api/shodan/host/<ip_address>')
-def api_shodan_host(ip_address):
-    """API endpoint to get detailed host information from Shodan"""
+@app.route('/api/actors/stats')
+def api_actors_stats():
+    """API endpoint to get actor statistics"""
     try:
-        if not app.config.get('SHODAN_API_KEY'):
-            return jsonify({'error': 'Shodan API key not configured'}), 400
+        actors = []
+        if os.path.exists(app.config['ACTORS_FILE']):
+            with open(app.config['ACTORS_FILE'], 'r') as f:
+                actors = json.load(f)
         
-        host_info = shodan_service.fetch_host_info(ip_address)
+        stats = calculate_actor_statistics(actors)
+        return jsonify(stats)
         
-        if host_info:
-            return jsonify(host_info)
-        else:
-            return jsonify({'error': 'Host information not found'}), 404
-            
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/api/shodan/search')
-def api_shodan_search():
-    """API endpoint for custom Shodan searches"""
+def get_actor_by_id(actor_id):
+    """Get a specific actor by ID"""
     try:
-        if not app.config.get('SHODAN_API_KEY'):
-            return jsonify({'error': 'Shodan API key not configured'}), 400
-        
-        query = request.args.get('query', '')
-        limit = request.args.get('limit', 50, type=int)
-        
-        if not query:
-            return jsonify({'error': 'Query parameter is required'}), 400
-        
-        # Use the internet scan method for custom queries
-        results = shodan_service.fetch_internet_scan_data(query=query, limit=limit)
-        
-        if results:
-            return jsonify({
-                'total': len(results),
-                'results': results
-            })
-        else:
-            return jsonify({'error': 'No results found'}), 404
+        if os.path.exists(app.config['ACTORS_FILE']):
+            with open(app.config['ACTORS_FILE'], 'r') as f:
+                actors = json.load(f)
             
+            for actor in actors:
+                if actor.get('id') == actor_id:
+                    return actor
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        print(f"Error getting actor {actor_id}: {e}")
+    
+    return None
 
-@app.route('/api/shodan/exploits')
-def api_shodan_exploits():
-    """API endpoint to search for exploits"""
+@app.route('/api/actors/<actor_id>')
+def api_actor_details(actor_id):
+    """API endpoint to get details for a specific actor"""
     try:
-        if not app.config.get('SHODAN_API_KEY'):
-            return jsonify({'error': 'Shodan API key not configured'}), 400
-        
-        query = request.args.get('query', 'type:exploit')
-        limit = request.args.get('limit', 20, type=int)
-        
-        exploits = shodan_service.search_exploits(query, limit)
-        
-        if exploits:
-            return jsonify({
-                'total': len(exploits),
-                'exploits': exploits
-            })
+        actor = get_actor_by_id(actor_id)
+        if actor:
+            return jsonify(actor)
         else:
-            return jsonify({'error': 'No exploits found'}), 404
+            return jsonify({'error': 'Actor not found'}), 404
             
     except Exception as e:
         return jsonify({'error': str(e)}), 500

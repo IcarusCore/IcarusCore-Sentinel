@@ -51,11 +51,6 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ 'active' if request.endpoint == 'shodan' else '' }}" href="{{ url_for('shodan') }}">
-                            <i class="fas fa-satellite-dish me-1"></i>Shodan
-                        </a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link {{ 'active' if request.endpoint == 'about' else '' }}" href="{{ url_for('about') }}">
                             <i class="fas fa-info-circle me-1"></i>About
                         </a>
@@ -108,8 +103,7 @@
                         Data sources: 
                         <a href="https://attack.mitre.org/" target="_blank" class="text-light">MITRE ATT&CK</a> | 
                         <a href="https://www.cisa.gov/" target="_blank" class="text-light">CISA</a> |
-                        <a href="https://otx.alienvault.com/" target="_blank" class="text-light">OTX</a> |
-                        <a href="https://www.shodan.io/" target="_blank" class="text-light">Shodan</a>
+                        <a href="https://otx.alienvault.com/" target="_blank" class="text-light">OTX</a>
                     </p>
                     <small class="text-muted">
                         Last updated: <span id="lastUpdated">{{ get_current_time() }}</span>
