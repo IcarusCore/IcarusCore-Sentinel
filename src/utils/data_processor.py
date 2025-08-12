@@ -157,6 +157,49 @@ class DataProcessor:
         except Exception as e:
             print(f"Error processing OTX data: {e}")
     
+    def process_shodan_data(self, shodan_data):
+        """Process Shodan vulnerability data and update threat files"""
+        try:
+            # Load existing threats
+            existing_threats = self._load_json_file(Config.THREATS_FILE)
+            
+            for vuln in shodan_data:
+                threat = {
+                    'id': vuln.get('id', ''),
+                    'name': vuln.get('name', ''),
+                    'description': vuln.get('description', ''),
+                    'tactic': 'Discovery',  # Shodan is primarily used for reconnaissance
+                    'severity': vuln.get('severity', 'Medium'),
+                    'source': 'Shodan',
+                    'date': vuln.get('date', ''),
+                    'link': f"https://www.shodan.io/host/{vuln.get('ip_address', '')}" if vuln.get('ip_address') else '',
+                    'tags': vuln.get('tags', []) + ['shodan', 'network-intelligence'],
+                    'ip_address': vuln.get('ip_address', ''),
+                    'port': vuln.get('port', 0),
+                    'service': vuln.get('service', ''),
+                    'country': vuln.get('country', ''),
+                    'organization': vuln.get('organization', ''),
+                    'vulnerabilities': vuln.get('vulnerabilities', []),
+                    'mitigation': self._generate_shodan_mitigation(vuln),
+                    'detection': self._generate_shodan_detection(vuln)
+                }
+                
+                # Check if already exists (avoid duplicates)
+                if not any(t.get('id') == threat['id'] and t.get('source') == 'Shodan' 
+                          for t in existing_threats):
+                    existing_threats.append(threat)
+            
+            # Keep only recent threats (last 2000 to include Shodan data)
+            existing_threats.sort(key=lambda x: x.get('date', ''), reverse=True)
+            existing_threats = existing_threats[:2000]
+            
+            # Save updated data
+            self._save_json_file(Config.THREATS_FILE, existing_threats)
+            print(f"Processed {len(shodan_data)} Shodan vulnerabilities")
+            
+        except Exception as e:
+            print(f"Error processing Shodan data: {e}")
+    
     def _process_mitre_actors(self, mitre_data):
         """Extract and process threat actor information from MITRE data"""
         try:
@@ -237,6 +280,79 @@ class DataProcessor:
             advice.append('Monitor data flows and implement DLP.')
         
         return ' '.join(advice) if advice else 'Follow security best practices and monitor for suspicious activity.'
+    
+    def _generate_shodan_mitigation(self, vuln):
+        """Generate mitigation advice for Shodan-detected vulnerabilities"""
+        service = vuln.get('service', '').lower()
+        port = vuln.get('port', 0)
+        
+        mitigations = []
+        
+        # Service-specific mitigations
+        if 'ssh' in service or port == 22:
+            mitigations.append("Implement key-based authentication and disable password authentication.")
+            mitigations.append("Change default SSH port and use fail2ban.")
+        elif 'http' in service or port in [80, 443]:
+            mitigations.append("Keep web server software updated and use a Web Application Firewall.")
+            mitigations.append("Implement proper access controls and remove default pages.")
+        elif 'ftp' in service or port == 21:
+            mitigations.append("Use SFTP instead of FTP for secure file transfers.")
+            mitigations.append("Implement strong authentication and access controls.")
+        elif 'telnet' in service or port == 23:
+            mitigations.append("Replace Telnet with SSH for secure remote access.")
+            mitigations.append("If Telnet is required, use it only on internal networks.")
+        elif 'mysql' in service or port == 3306:
+            mitigations.append("Restrict database access to authorized hosts only.")
+            mitigations.append("Use strong passwords and enable SSL connections.")
+        elif 'mongodb' in service or port == 27017:
+            mitigations.append("Enable authentication and use access controls.")
+            mitigations.append("Bind to localhost only unless external access is required.")
+        elif 'rdp' in service or port == 3389:
+            mitigations.append("Enable Network Level Authentication and use strong passwords.")
+            mitigations.append("Limit RDP access through firewall rules.")
+        else:
+            mitigations.append("Review service configuration and implement access controls.")
+            mitigations.append("Keep software updated and monitor for unauthorized access.")
+        
+        # General mitigations
+        mitigations.append("Use firewall rules to restrict access to necessary ports only.")
+        mitigations.append("Implement network segmentation and monitoring.")
+        
+        if vuln.get('vulnerabilities'):
+            mitigations.append("Apply security patches for identified vulnerabilities immediately.")
+        
+        return ' '.join(mitigations)
+
+    def _generate_shodan_detection(self, vuln):
+        """Generate detection advice for Shodan-detected exposures"""
+        service = vuln.get('service', '').lower()
+        port = vuln.get('port', 0)
+        
+        detections = []
+        
+        # Service-specific detection
+        if 'ssh' in service or port == 22:
+            detections.append("Monitor SSH login attempts and failed authentication logs.")
+        elif 'http' in service or port in [80, 443]:
+            detections.append("Monitor web server access logs for suspicious requests.")
+            detections.append("Implement web application monitoring and anomaly detection.")
+        elif 'database' in service or port in [3306, 5432, 27017]:
+            detections.append("Monitor database connection logs and query patterns.")
+            detections.append("Set up alerts for unauthorized database access attempts.")
+        elif 'ftp' in service or port == 21:
+            detections.append("Monitor FTP access logs and file transfer activities.")
+        else:
+            detections.append("Monitor service logs for unusual connection patterns.")
+        
+        # General detection
+        detections.append("Use network monitoring tools to detect unusual traffic patterns.")
+        detections.append("Implement intrusion detection systems to identify reconnaissance activities.")
+        detections.append("Monitor for connections from unexpected geographic locations.")
+        
+        if vuln.get('vulnerabilities'):
+            detections.append("Deploy vulnerability scanners to detect exploitation attempts.")
+        
+        return ' '.join(detections)
     
     def _load_json_file(self, filepath):
         """Load JSON data from file"""

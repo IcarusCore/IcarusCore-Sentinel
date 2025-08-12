@@ -61,11 +61,17 @@ def get_severity_color(severity):
     return severity_colors.get(severity, 'light')
 
 def get_mitre_technique_url(technique_id):
-    """Generate MITRE ATT&CK technique URL"""
+    """Generate MITRE ATT&CK technique URL with correct format for sub-techniques"""
     if not technique_id or not technique_id.startswith('T'):
         return None
     
-    return f"https://attack.mitre.org/techniques/{technique_id}/"
+    if '.' in technique_id:
+        # Sub-technique: T1546.012 -> https://attack.mitre.org/techniques/T1546/012/
+        main_technique, sub_technique = technique_id.split('.', 1)
+        return f"https://attack.mitre.org/techniques/{main_technique}/{sub_technique}/"
+    else:
+        # Main technique: T1546 -> https://attack.mitre.org/techniques/T1546/
+        return f"https://attack.mitre.org/techniques/{technique_id}/"
 
 def sanitize_filename(filename):
     """Sanitize filename for safe file operations"""

@@ -5,13 +5,14 @@
 {% block extra_css %}
 <style>
     .hero-section {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
         color: white;
         padding: 4rem 0;
         margin-bottom: 2rem;
         border-radius: 15px;
         position: relative;
         overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.1);
     }
     
     .hero-section::before {
@@ -35,14 +36,83 @@
         z-index: 2;
     }
     
+    .hero-section h1,
+    .hero-section .display-4 {
+        color: white !important;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .hero-section .lead,
+    .hero-section p {
+        color: rgba(255,255,255,0.95) !important;
+    }
+    
+    .hero-stats .h2 {
+        color: white !important;
+        font-weight: 700;
+    }
+    
+    .hero-stats small {
+        color: rgba(255,255,255,0.9) !important;
+    }
+    
     .activity-item {
         transition: all 0.3s ease;
         border-left: 4px solid transparent;
+        background-color: white;
+        border: 1px solid #e9ecef;
     }
     
     .activity-item:hover {
         transform: translateX(3px);
-        border-left-color: var(--primary-color);
+        border-left-color: #0d6efd;
+    }
+    
+    /* Button improvements */
+    .btn-light {
+        background-color: white;
+        border-color: white;
+        color: #0d6efd;
+        font-weight: 600;
+    }
+    
+    .btn-light:hover {
+        background-color: rgba(255,255,255,0.9);
+        border-color: rgba(255,255,255,0.9);
+        color: #0a58ca;
+        transform: translateY(-1px);
+    }
+    
+    .btn-outline-light {
+        color: white;
+        border-color: rgba(255,255,255,0.7);
+        font-weight: 600;
+    }
+    
+    .btn-outline-light:hover {
+        background-color: rgba(255,255,255,0.1);
+        border-color: white;
+        color: white;
+        transform: translateY(-1px);
+    }
+    
+    /* Data source improvements */
+    .data-source-item h6 {
+        color: #212529;
+        font-weight: 600;
+    }
+    
+    .data-source-item small {
+        color: #6c757d;
+    }
+    
+    .source-icon {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+    }
+    
+    .data-source-item:hover .source-icon {
+        transform: scale(1.05);
     }
 </style>
 {% endblock %}
@@ -254,7 +324,7 @@
             <div class="card-body">
                 {% if actors %}
                     {% for actor in actors %}
-                    <div class="d-flex align-items-center mb-3 p-2 rounded bg-light">
+                    <div class="d-flex align-items-center mb-3 p-2 rounded" style="background-color: #f8f9fa;">
                         <div class="avatar-sm bg-danger text-white rounded-circle d-flex align-items-center justify-content-center me-3">
                             <i class="fas fa-user-ninja"></i>
                         </div>
@@ -292,7 +362,7 @@
             <div class="card-body">
                 {% if tools %}
                     {% for tool in tools %}
-                    <div class="d-flex align-items-center mb-3 p-2 rounded bg-light">
+                    <div class="d-flex align-items-center mb-3 p-2 rounded" style="background-color: #f8f9fa;">
                         <div class="avatar-sm bg-warning text-white rounded-circle d-flex align-items-center justify-content-center me-3">
                             <i class="fas fa-cog"></i>
                         </div>
@@ -411,6 +481,24 @@ document.addEventListener('DOMContentLoaded', function() {
     
     document.querySelectorAll('.stat-card').forEach(card => {
         observer.observe(card);
+    });
+    
+    // Add hover effects to data source items
+    document.querySelectorAll('.data-source-item').forEach(item => {
+        item.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-3px)';
+            this.style.transition = 'transform 0.3s ease';
+        });
+        
+        item.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+    
+    // Initialize tooltips for better UX
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
     });
 });
 </script>

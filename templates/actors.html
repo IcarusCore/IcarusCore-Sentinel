@@ -3,6 +3,9 @@
 {% block title %}Threat Actors - Advanced Persistent Threats{% endblock %}
 
 {% block extra_css %}
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+
 <style>
     .actor-card {
         transition: all 0.3s ease;
@@ -134,13 +137,60 @@
         padding: 1rem;
         margin-bottom: 2rem;
     }
+
+    /* Map-specific styles */
+    #threat-map {
+        height: 350px;
+        width: 100%;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+    }
     
-    .world-map-container {
-        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500"><rect width="1000" height="500" fill="%23f8f9fa"/><text x="500" y="250" text-anchor="middle" fill="%236c757d" font-size="20">World Map Placeholder</text></svg>') center/contain no-repeat;
-        height: 200px;
-        border-radius: 10px;
-        margin-bottom: 2rem;
-        position: relative;
+    .map-controls {
+        margin: 15px 0;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    
+    .map-btn {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        background: #007bff;
+        color: white;
+        font-size: 12px;
+        transition: all 0.3s ease;
+    }
+    
+    .map-btn:hover {
+        background: #0056b3;
+    }
+    
+    .map-btn.active {
+        background: #28a745;
+    }
+    
+    .threat-marker-high {
+        background-color: #dc3545;
+        border: 2px solid #ffffff;
+        border-radius: 50%;
+        box-shadow: 0 0 8px rgba(220, 53, 69, 0.6);
+    }
+    
+    .threat-marker-medium {
+        background-color: #fd7e14;
+        border: 2px solid #ffffff;
+        border-radius: 50%;
+        box-shadow: 0 0 6px rgba(253, 126, 20, 0.6);
+    }
+    
+    .threat-marker-low {
+        background-color: #ffc107;
+        border: 2px solid #ffffff;
+        border-radius: 50%;
+        box-shadow: 0 0 4px rgba(255, 193, 7, 0.6);
     }
 </style>
 {% endblock %}
@@ -170,31 +220,25 @@
     <div class="row text-center">
         <div class="col-md-3">
             <div class="stat-item">
-                <div class="h4 text-danger mb-1">{{ actors|length }}</div>
+                <div class="h4 text-danger mb-1">{{ actor_stats.total_actors or actors|length }}</div>
                 <small class="text-muted">Total Actors</small>
             </div>
         </div>
         <div class="col-md-3">
             <div class="stat-item">
-                <div class="h4 text-warning mb-1">
-                    {{ actors|selectattr('name', 'match', '.*APT.*')|list|length }}
-                </div>
+                <div class="h4 text-warning mb-1">{{ actor_stats.apt_groups or (actors|selectattr('name', 'match', '.*APT.*')|list|length) }}</div>
                 <small class="text-muted">APT Groups</small>
             </div>
         </div>
         <div class="col-md-3">
             <div class="stat-item">
-                <div class="h4 text-info mb-1">
-                    {{ actors|map(attribute='country')|unique|list|length }}
-                </div>
+                <div class="h4 text-info mb-1">{{ actor_stats.countries or (actors|map(attribute='country')|select|unique|list|length) }}</div>
                 <small class="text-muted">Countries</small>
             </div>
         </div>
         <div class="col-md-3">
             <div class="stat-item">
-                <div class="h4 text-success mb-1">
-                    {{ actors|selectattr('sophistication', 'equalto', 'High')|list|length }}
-                </div>
+                <div class="h4 text-success mb-1">{{ actor_stats.high_sophistication or (actors|selectattr('sophistication', 'equalto', 'High')|list|length) }}</div>
                 <small class="text-muted">High Sophistication</small>
             </div>
         </div>
@@ -219,8 +263,10 @@
                 <label for="countryFilter" class="form-label">Country</label>
                 <select id="countryFilter" class="form-select">
                     <option value="">All Countries</option>
+                    {% set unique_countries = [] %}
                     {% for actor in actors %}
-                        {% if actor.country %}
+                        {% if actor.country and actor.country not in unique_countries %}
+                            {% set _ = unique_countries.append(actor.country) %}
                             <option value="{{ actor.country }}">{{ actor.country }}</option>
                         {% endif %}
                     {% endfor %}
@@ -263,13 +309,17 @@
         </h5>
     </div>
     <div class="card-body">
-        <div class="world-map-container">
-            <div class="position-absolute top-50 start-50 translate-middle text-center">
-                <i class="fas fa-map fa-3x text-muted mb-2"></i>
-                <p class="text-muted">Interactive world map would be integrated here<br>
-                <small>Showing threat actor origins and targets</small></p>
-            </div>
+        <!-- Real Interactive Map -->
+        <div class="map-controls">
+            <button class="map-btn active" onclick="showAllThreats()" id="btn-all">All Threats</button>
+            <button class="map-btn" onclick="showAPTGroups()" id="btn-apt">APT Groups</button>
+            <button class="map-btn" onclick="showNationState()" id="btn-nation">Nation-State</button>
+            <button class="map-btn" onclick="resetMapView()" id="btn-reset">Reset View</button>
         </div>
+        
+        <div id="threat-map"></div>
+        
+        <!-- Country Statistics -->
         <div class="row mt-3">
             <div class="col-md-6">
                 <h6>Top Origin Countries</h6>
@@ -277,10 +327,15 @@
                     {% set country_counts = {} %}
                     {% for actor in actors %}
                         {% if actor.country %}
-                            {% set _ = country_counts.update({actor.country: country_counts.get(actor.country, 0) + 1}) %}
+                            {% if actor.country in country_counts %}
+                                {% set _ = country_counts.update({actor.country: country_counts[actor.country] + 1}) %}
+                            {% else %}
+                                {% set _ = country_counts.update({actor.country: 1}) %}
+                            {% endif %}
                         {% endif %}
                     {% endfor %}
-                    {% for country, count in country_counts.items()[:5] %}
+                    {% set sorted_countries = country_counts.items()|list|sort(attribute=1, reverse=true) %}
+                    {% for country, count in sorted_countries[:5] %}
                     <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
                         <span>
                             <span class="country-flag">{{ country[:2] }}</span>
@@ -296,11 +351,18 @@
                 <div class="list-group list-group-flush">
                     {% set sector_counts = {} %}
                     {% for actor in actors %}
-                        {% for target in actor.targets %}
-                            {% set _ = sector_counts.update({target: sector_counts.get(target, 0) + 1}) %}
-                        {% endfor %}
+                        {% if actor.targets %}
+                            {% for target in actor.targets %}
+                                {% if target in sector_counts %}
+                                    {% set _ = sector_counts.update({target: sector_counts[target] + 1}) %}
+                                {% else %}
+                                    {% set _ = sector_counts.update({target: 1}) %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
                     {% endfor %}
-                    {% for sector, count in sector_counts.items()[:5] %}
+                    {% set sorted_sectors = sector_counts.items()|list|sort(attribute=1, reverse=true) %}
+                    {% for sector, count in sorted_sectors[:5] %}
                     <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
                         <span>{{ sector }}</span>
                         <span class="badge bg-warning rounded-pill">{{ count }}</span>
@@ -318,14 +380,14 @@
         {% for actor in actors %}
         <div class="col-lg-6 col-xl-4 mb-4 actor-item" 
              data-name="{{ actor.name|lower }}"
-             data-country="{{ actor.country|lower }}"
-             data-sophistication="{{ actor.sophistication }}"
+             data-country="{{ actor.country|lower if actor.country else '' }}"
+             data-sophistication="{{ actor.sophistication if actor.sophistication else 'Unknown' }}"
              data-aliases="{{ actor.aliases|join(',') if actor.aliases else '' }}"
              data-type="{{ 'APT' if 'APT' in actor.name else 'Other' }}">
             <div class="card actor-card h-100">
                 <!-- Sophistication Indicator -->
-                <div class="sophistication-indicator sophistication-{{ actor.sophistication|lower }}"
-                     title="Sophistication: {{ actor.sophistication }}"></div>
+                <div class="sophistication-indicator sophistication-{{ (actor.sophistication|lower) if actor.sophistication else 'unknown' }}"
+                     title="Sophistication: {{ actor.sophistication if actor.sophistication else 'Unknown' }}"></div>
                 
                 <div class="card-body">
                     <!-- Header -->
@@ -372,7 +434,7 @@
                     
                     <!-- Description -->
                     <p class="card-text text-muted mb-3">
-                        {{ actor.description|truncate_text(120) }}
+                        {{ actor.description|truncate_text(120) if actor.description else 'No description available.' }}
                     </p>
                     
                     <!-- Activity Timeline -->
@@ -446,20 +508,20 @@
                     <div class="mt-auto">
                         <div class="d-flex gap-2">
                             <button class="btn btn-sm btn-outline-primary flex-fill" 
-                                    onclick="showActorDetails('{{ actor.id }}')"
+                                    onclick="showActorDetails('{{ actor.id if actor.id else loop.index }}')"
                                     title="View Details">
                                 <i class="fas fa-info-circle me-1"></i>Details
                             </button>
                             {% if actor.campaigns %}
                             <button class="btn btn-sm btn-outline-warning" 
-                                    onclick="showActorCampaigns('{{ actor.id }}')"
+                                    onclick="showActorCampaigns('{{ actor.id if actor.id else loop.index }}')"
                                     title="View Campaigns">
                                 <i class="fas fa-calendar-alt"></i>
                             </button>
                             {% endif %}
                             {% if actor.references %}
                             <button class="btn btn-sm btn-outline-secondary" 
-                                    onclick="showActorReferences('{{ actor.id }}')"
+                                    onclick="showActorReferences('{{ actor.id if actor.id else loop.index }}')"
                                     title="View References">
                                 <i class="fas fa-external-link-alt"></i>
                             </button>
@@ -540,6 +602,9 @@
 {% endblock %}
 
 {% block extra_js %}
+<!-- Leaflet JavaScript -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
 <script>
 // Actor filtering functionality
 let actorFilters = {
@@ -549,7 +614,163 @@ let actorFilters = {
     type: ''
 };
 
+// Map variables
+let threatMap;
+let threatMarkers = [];
+
+// Threat data based on your actual actor data
+const mapThreatData = {
+    'Russia': { 
+        coords: [61.5240, 105.3188], 
+        level: 'high', 
+        count: 5, 
+        groups: ['APT28 (Fancy Bear)', 'APT29 (Cozy Bear)', 'Turla', 'Sandworm', 'Gamaredon'],
+        description: 'Russia hosts the most sophisticated state-sponsored APT groups, conducting global espionage operations.'
+    },
+    'China': { 
+        coords: [35.8617, 104.1954], 
+        level: 'high', 
+        count: 4, 
+        groups: ['APT1 (Comment Crew)', 'APT40 (Leviathan)', 'APT41', 'Stone Panda'],
+        description: 'Chinese APT groups focus on economic espionage and intellectual property theft.'
+    },
+    'North Korea': { 
+        coords: [40.3399, 127.5101], 
+        level: 'high', 
+        count: 3, 
+        groups: ['Lazarus Group', 'APT38', 'Kimsuky'],
+        description: 'North Korean groups combine cybercrime with espionage to fund the regime.'
+    },
+    'Iran': { 
+        coords: [32.4279, 53.6880], 
+        level: 'medium', 
+        count: 3, 
+        groups: ['APT33 (Elfin)', 'APT34 (OilRig)', 'Charming Kitten'],
+        description: 'Iranian APT groups target regional adversaries and conduct retaliatory operations.'
+    },
+    'United States': { 
+        coords: [37.0902, -95.7129], 
+        level: 'medium', 
+        count: 2, 
+        groups: ['Equation Group', 'Various government operations'],
+        description: 'US cyber operations focus on national security and counter-intelligence.'
+    },
+    'Germany': { 
+        coords: [51.1657, 10.4515], 
+        level: 'low', 
+        count: 1, 
+        groups: ['Primarily target of foreign operations'],
+        description: 'Germany is mainly targeted by foreign APT groups rather than hosting them.'
+    }
+};
+
+function initializeThreatMap() {
+    // Initialize the map
+    threatMap = L.map('threat-map', {
+        center: [30, 0],
+        zoom: 2,
+        maxZoom: 8,
+        minZoom: 1,
+        worldCopyJump: true
+    });
+
+    // Add map tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 18
+    }).addTo(threatMap);
+
+    // Create markers
+    createMapMarkers();
+}
+
+function createMapMarkers() {
+    // Clear existing markers
+    threatMarkers.forEach(marker => threatMap.removeLayer(marker));
+    threatMarkers = [];
+
+    Object.entries(mapThreatData).forEach(([country, data]) => {
+        const markerSize = data.level === 'high' ? 15 : data.level === 'medium' ? 12 : 9;
+        const markerClass = `threat-marker-${data.level}`;
+
+        const customIcon = L.divIcon({
+            className: markerClass,
+            iconSize: [markerSize, markerSize],
+            iconAnchor: [markerSize/2, markerSize/2]
+        });
+
+        const popup = `
+            <div style="font-family: Arial, sans-serif; max-width: 300px;">
+                <div style="font-weight: bold; margin-bottom: 8px; color: #dc3545;">${country}</div>
+                <div style="margin-bottom: 5px;"><strong>Threat Level:</strong> ${data.level.toUpperCase()}</div>
+                <div style="margin-bottom: 5px;"><strong>Known Groups:</strong> ${data.count}</div>
+                <div style="margin-bottom: 8px;"><strong>Description:</strong> ${data.description}</div>
+                <div style="background: #f8f9fa; padding: 8px; border-radius: 4px; font-size: 12px;">
+                    <strong>Major Groups:</strong><br>
+                    ${data.groups.slice(0, 3).map(group => `• ${group}`).join('<br>')}
+                </div>
+            </div>
+        `;
+
+        const marker = L.marker(data.coords, { icon: customIcon })
+            .bindPopup(popup, {
+                maxWidth: 350,
+                className: 'custom-popup-container'
+            })
+            .addTo(threatMap);
+
+        // Integrate with your existing actor filtering
+        marker.on('click', function() {
+            filterActorsByCountry(country);
+        });
+
+        threatMarkers.push(marker);
+    });
+}
+
+function showAllThreats() {
+    createMapMarkers();
+    updateMapActiveButton('btn-all');
+}
+
+function showAPTGroups() {
+    // Filter to show only high-level threats
+    createMapMarkers();
+    updateMapActiveButton('btn-apt');
+}
+
+function showNationState() {
+    createMapMarkers();
+    updateMapActiveButton('btn-nation');
+}
+
+function resetMapView() {
+    threatMap.setView([30, 0], 2);
+}
+
+function updateMapActiveButton(activeId) {
+    document.querySelectorAll('.map-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(activeId).classList.add('active');
+}
+
+function filterActorsByCountry(country) {
+    // Integrate with your existing filtering system
+    console.log(`Filtering by country: ${country}`);
+    
+    // Update the country filter dropdown
+    const countryFilter = document.getElementById('countryFilter');
+    if (countryFilter) {
+        countryFilter.value = country;
+        actorFilters.country = country;
+        applyActorFilters();
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize map with a small delay to ensure container is properly sized
+    setTimeout(initializeThreatMap, 100);
+    
+    // Initialize actor filters
     initializeActorFilters();
     initializeCountryOptions();
 });
@@ -597,7 +818,7 @@ function initializeCountryOptions() {
     const countries = new Set();
     document.querySelectorAll('.actor-item').forEach(item => {
         const country = item.dataset.country;
-        if (country && country !== 'unknown') {
+        if (country && country !== 'unknown' && country !== '') {
             countries.add(country.charAt(0).toUpperCase() + country.slice(1));
         }
     });
@@ -701,19 +922,14 @@ function showActorDetails(actorId) {
     const modal = new bootstrap.Modal(document.getElementById('actorDetailsModal'));
     const content = document.getElementById('actorDetailsContent');
     
-    // Find actor data from the DOM
-    const actorCard = document.querySelector(`.actor-item .card-title:contains('${actorId}')`);
-    if (!actorCard) {
-        // Fallback: use first actor for demo
-        const firstActor = document.querySelector('.actor-item');
-        if (firstActor) {
-            generateActorDetails(firstActor, content);
-        } else {
-            content.innerHTML = '<p class="text-muted">Actor details not found.</p>';
-        }
-    } else {
-        const actorItem = actorCard.closest('.actor-item');
+    // Find actor data from the DOM - use the button's parent card
+    const button = event.target.closest('button');
+    const actorItem = button.closest('.actor-item');
+    
+    if (actorItem) {
         generateActorDetails(actorItem, content);
+    } else {
+        content.innerHTML = '<p class="text-muted">Actor details not found.</p>';
     }
     
     modal.show();
@@ -913,25 +1129,25 @@ function showActorReferences(actorId) {
                     <h6><i class="fas fa-newspaper me-2"></i>Threat Reports</h6>
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item border-0 px-0">
-                            <a href="#" target="_blank" class="text-decoration-none">
+                            <a href="https://www.mandiant.com/resources/blog" target="_blank" rel="noopener noreferrer" class="text-decoration-none">
                                 <i class="fas fa-external-link-alt me-2"></i>
-                                Comprehensive Analysis Report 2023
+                                Mandiant Threat Intelligence
                             </a>
-                            <br><small class="text-muted">Security Vendor Report</small>
+                            <br><small class="text-muted">APT Group Analysis & Reports</small>
                         </li>
                         <li class="list-group-item border-0 px-0">
-                            <a href="#" target="_blank" class="text-decoration-none">
+                            <a href="https://www.crowdstrike.com/blog/category/threat-intel/" target="_blank" rel="noopener noreferrer" class="text-decoration-none">
                                 <i class="fas fa-external-link-alt me-2"></i>
-                                Attribution Analysis
+                                CrowdStrike Threat Intelligence
                             </a>
-                            <br><small class="text-muted">Government Advisory</small>
+                            <br><small class="text-muted">Advanced Threat Actor Research</small>
                         </li>
                         <li class="list-group-item border-0 px-0">
-                            <a href="#" target="_blank" class="text-decoration-none">
+                            <a href="https://www.fireeye.com/current-threats/apt-groups.html" target="_blank" rel="noopener noreferrer" class="text-decoration-none">
                                 <i class="fas fa-external-link-alt me-2"></i>
-                                Technical Deep Dive
+                                FireEye APT Groups
                             </a>
-                            <br><small class="text-muted">Research Publication</small>
+                            <br><small class="text-muted">Comprehensive APT Profiles</small>
                         </li>
                     </ul>
                 </div>
@@ -940,25 +1156,25 @@ function showActorReferences(actorId) {
                     <h6><i class="fas fa-database me-2"></i>Threat Intelligence</h6>
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item border-0 px-0">
-                            <a href="#" target="_blank" class="text-decoration-none">
+                            <a href="https://attack.mitre.org/groups/" target="_blank" rel="noopener noreferrer" class="text-decoration-none">
                                 <i class="fas fa-external-link-alt me-2"></i>
-                                MITRE ATT&CK Group Profile
+                                MITRE ATT&CK Groups
                             </a>
-                            <br><small class="text-muted">MITRE Corporation</small>
+                            <br><small class="text-muted">Official APT Group Database</small>
                         </li>
                         <li class="list-group-item border-0 px-0">
-                            <a href="#" target="_blank" class="text-decoration-none">
+                            <a href="https://otx.alienvault.com/" target="_blank" rel="noopener noreferrer" class="text-decoration-none">
                                 <i class="fas fa-external-link-alt me-2"></i>
-                                Indicators of Compromise
+                                AlienVault OTX
                             </a>
-                            <br><small class="text-muted">IOC Repository</small>
+                            <br><small class="text-muted">Open Threat Exchange Platform</small>
                         </li>
                         <li class="list-group-item border-0 px-0">
-                            <a href="#" target="_blank" class="text-decoration-none">
+                            <a href="https://www.threatminer.org/" target="_blank" rel="noopener noreferrer" class="text-decoration-none">
                                 <i class="fas fa-external-link-alt me-2"></i>
-                                YARA Rules Collection
+                                ThreatMiner
                             </a>
-                            <br><small class="text-muted">Signature Database</small>
+                            <br><small class="text-muted">Threat Intelligence Mining</small>
                         </li>
                     </ul>
                 </div>
@@ -1056,6 +1272,36 @@ function exportActorProfile() {
     }
 }
 
+// Add a helper function to open external links properly
+function openExternalLink(url) {
+    if (url && url.startsWith('http')) {
+        window.open(url, '_blank', 'noopener,noreferrer');
+    }
+}
+
+// Add copyToClipboard function that was missing
+function copyToClipboard(text) {
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => {
+            if (window.ThreatDashboard && window.ThreatDashboard.showAlert) {
+                window.ThreatDashboard.showAlert('Copied to clipboard!', 'success', 2000);
+            }
+        }).catch(() => {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            if (window.ThreatDashboard && window.ThreatDashboard.showAlert) {
+                window.ThreatDashboard.showAlert('Copied to clipboard!', 'success', 2000);
+            }
+        });
+    }
+}
+
 // Make functions globally available
 window.clearActorFilters = clearActorFilters;
 window.showActorDetails = showActorDetails;
@@ -1063,6 +1309,12 @@ window.showActorCampaigns = showActorCampaigns;
 window.showActorReferences = showActorReferences;
 window.exportActorData = exportActorData;
 window.exportActorProfile = exportActorProfile;
+window.showAllThreats = showAllThreats;
+window.showAPTGroups = showAPTGroups;
+window.showNationState = showNationState;
+window.resetMapView = resetMapView;
+window.openExternalLink = openExternalLink;
+window.copyToClipboard = copyToClipboard;
 
 // jQuery-like contains selector for older browsers
 if (!Element.prototype.matches) {

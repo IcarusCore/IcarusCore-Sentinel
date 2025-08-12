@@ -31,37 +31,54 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('index') }}">
+                        <a class="nav-link {{ 'active' if request.endpoint == 'index' else '' }}" href="{{ url_for('index') }}">
                             <i class="fas fa-home me-1"></i>Dashboard
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('ttps') }}">
+                        <a class="nav-link {{ 'active' if request.endpoint == 'ttps' else '' }}" href="{{ url_for('ttps') }}">
                             <i class="fas fa-crosshairs me-1"></i>TTPs
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('actors') }}">
+                        <a class="nav-link {{ 'active' if request.endpoint == 'actors' else '' }}" href="{{ url_for('actors') }}">
                             <i class="fas fa-user-secret me-1"></i>Threat Actors
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('tools') }}">
+                        <a class="nav-link {{ 'active' if request.endpoint == 'tools' else '' }}" href="{{ url_for('tools') }}">
                             <i class="fas fa-tools me-1"></i>Tools
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('about') }}">
+                        <a class="nav-link {{ 'active' if request.endpoint == 'shodan' else '' }}" href="{{ url_for('shodan') }}">
+                            <i class="fas fa-satellite-dish me-1"></i>Shodan
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if request.endpoint == 'about' else '' }}" href="{{ url_for('about') }}">
                             <i class="fas fa-info-circle me-1"></i>About
                         </a>
                     </li>
                 </ul>
                 
                 <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <button class="btn btn-outline-light btn-sm" onclick="refreshData()">
-                            <i class="fas fa-sync-alt me-1"></i>Refresh
-                        </button>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-cog me-1"></i>Actions
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="refreshData()">
+                                <i class="fas fa-sync-alt me-2"></i>Refresh Data
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" onclick="exportData()">
+                                <i class="fas fa-download me-2"></i>Export Data
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" onclick="showSettings()">
+                                <i class="fas fa-cog me-2"></i>Settings
+                            </a></li>
+                        </ul>
                     </li>
                 </ul>
             </div>
@@ -91,10 +108,11 @@
                         Data sources: 
                         <a href="https://attack.mitre.org/" target="_blank" class="text-light">MITRE ATT&CK</a> | 
                         <a href="https://www.cisa.gov/" target="_blank" class="text-light">CISA</a> |
-                        <a href="https://otx.alienvault.com/" target="_blank" class="text-light">OTX</a>
+                        <a href="https://otx.alienvault.com/" target="_blank" class="text-light">OTX</a> |
+                        <a href="https://www.shodan.io/" target="_blank" class="text-light">Shodan</a>
                     </p>
                     <small class="text-muted">
-                        Last updated: <span id="lastUpdated">--</span>
+                        Last updated: <span id="lastUpdated">{{ get_current_time() }}</span>
                     </small>
                 </div>
             </div>
@@ -120,5 +138,37 @@
     <!-- Custom JavaScript -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     {% block extra_js %}{% endblock %}
+
+    <script>
+    // Additional global functions
+    function exportData() {
+        if (typeof exportFilteredResults === 'function') {
+            exportFilteredResults();
+        } else {
+            // Fallback export functionality
+            window.open('/api/export', '_blank');
+        }
+    }
+
+    function showSettings() {
+        if (typeof openSettingsModal === 'function') {
+            openSettingsModal();
+        } else {
+            alert('Settings functionality not available on this page.');
+        }
+    }
+
+    // Global function to safely open external links
+    function openExternalLink(url) {
+        if (url && url.startsWith('http')) {
+            window.open(url, '_blank', 'noopener,noreferrer');
+        } else {
+            console.warn('Invalid external URL:', url);
+        }
+    }
+
+    // Make openExternalLink available globally
+    window.openExternalLink = openExternalLink;
+    </script>
 </body>
 </html>
